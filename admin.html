@@ -1189,7 +1189,7 @@ function adminOrders(){
 }
 function ordersPanel(){
   var k=ordKey();
-  return '<div class="panel"><h3>Online orders</h3><p class="muted" style="margin-bottom:14px">Checkout orders are saved in your Google Sheet. The customer gets a confirmation email and you get an email for each new order.</p><div class="fgrid">'+
+  return '<div class="panel"><h3>Online orders</h3><p class="muted" style="margin-bottom:14px">Paste the orders link and passcode once. New orders then show up in the Orders tab.</p><div class="fgrid">'+
    sf("orders_url","Orders link (Google Sheet web app)",{ph:"https://script.google.com/macros/s/…/exec",help:"From the Google Sheet setup. This is published with the website so the checkout can send orders."})+
    '<div class="field"><label for="ord-key">Orders passcode</label><input id="ord-key" type="password" value="" placeholder="'+(k?"Saved on this device (hidden)":"Passcode from the sheet setup")+'" autocomplete="off"><p class="help">Lets this device see and update orders. Stored on this device only.</p></div></div>'+
    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="ab dark" data-a="ord-save">Save and test</button>'+(k?'<button class="ab" data-a="ord-forget">Remove passcode from this device</button>':"")+"</div></div>";
