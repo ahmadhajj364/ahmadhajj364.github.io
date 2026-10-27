@@ -970,7 +970,7 @@ function renderCheckout(){
   var t=totals(),phone=DATA.settings.phone||"";
   m.innerHTML='<div class="wrap co-page"><div class="crumbs"><button data-a="home">'+esc(T("home"))+'</button><span>/</span><button data-a="cart">'+esc(T("cart"))+"</button><span>/</span><span>"+esc(T("checkout"))+"</span></div><h1>"+esc(T("checkout"))+'</h1><div class="co-grid">'+
    '<form class="co-form" id="cof" novalidate>'+
-   '<section class="co-sec"><h2><span class="co-n">1</span>'+esc(T("sec_contact"))+"</h2>"+coField("co-name","name",T("f_name"),"text","name")+'<div class="co-two">'+coField("co-phone","phone",T("f_phone"),"tel","tel")+coField("co-email","email",T("f_email"),"email","email",true,T("email_help"))+"</div></section>"+
+   '<section class="co-sec"><h2><span class="co-n">1</span>'+esc(T("sec_contact"))+"</h2>"+coField("co-name","name",T("f_name"),"text","name")+''+coField("co-phone","phone",T("f_phone"),"tel","tel")+"</section>"+
    '<section class="co-sec"><h2><span class="co-n">2</span>'+esc(T("sec_delivery"))+"</h2>"+coField("co-area","area",T("f_area"),"text","address-level2")+coField("co-address","address",T("f_address"),"text","street-address")+coField("co-notes","notes",T("f_notes").replace(/\s*\(.*?\)\s*$/,""),"textarea","off",true)+"</section>"+
    '<section class="co-sec"><h2><span class="co-n">3</span>'+esc(T("sec_pay"))+'</h2><div class="pay-opt" role="radio" aria-checked="true"><span class="dot"></span><div><b>'+esc(T("perk2"))+"</b><span>"+esc(T("cod_d"))+"</span></div></div></section>"+
    '<input class="hp" type="text" id="co-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'+
