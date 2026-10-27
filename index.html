@@ -1341,7 +1341,7 @@ document.addEventListener("click",function(e){
   case "more":S.limit+=24;renderGrid();pushSt(true);break;
   case "lq":if(S.cart[i]){S.cart[i].qty=Math.max(0,Math.min(99,S.cart[i].qty+parseInt(v,10)));saveCart();renderDrawer();}break;
   case "rm":S.cart.splice(i,1);saveCart();renderDrawer();break;
-  case "checkout":S.coMsg="";S.coErrs={};goPage("checkout");break;
+  case "checkout":S.coMsg="";S.coErrs={};if(S.page==="checkout"&&S.drawer){closeOverlay();renderMain();window.scrollTo({top:0});}else goPage("checkout");break;
   case "need":S.coErr=true;renderSend();var f=["co-name","co-phone","co-area"].filter(function(x){var el=$(x);return el&&!el.value.trim();})[0];if(f)$(f).focus();break;
   /* admin */
   case "admin":openAdmin();break;
