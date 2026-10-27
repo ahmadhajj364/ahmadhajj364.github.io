@@ -3,7 +3,26 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
-<style id="mc-css">
+<style id="mc-css">.lockscr{position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;padding:24px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.lock-box{width:100%;max-width:320px;text-align:center;display:grid;gap:18px;justify-items:center}
+.lock-box .logo-c{width:72px;height:72px;border-radius:50%;overflow:hidden;background:#111;display:grid;place-items:center}
+.lock-box .logo-c img{width:100%;height:100%;object-fit:cover}
+.lock-box h1{font-size:20px;font-weight:600;margin:0}
+.lock-box p{margin:0;color:var(--muted);font-size:14px;min-height:20px}
+.lock-box p.err{color:var(--danger)}
+.pin-dots{display:flex;gap:16px;justify-content:center;height:18px}
+.pin-dots i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--black);display:block}
+.pin-dots i.on{background:var(--black)}
+.pin-dots.shake{animation:pinshake .35s}
+@keyframes pinshake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.pin-pad{display:grid;grid-template-columns:repeat(3,72px);gap:14px;justify-content:center;direction:ltr}
+.pin-pad button{width:72px;height:72px;border-radius:50%;border:1px solid var(--line);background:var(--soft);font-size:26px;font-weight:500;color:var(--ink);display:grid;place-items:center}
+.pin-pad button:active{background:#e6e6e6}
+.pin-pad button:disabled{opacity:.4}
+.pin-pad .ghost{background:none;border:0}
+.pin-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pin-row input{width:120px;letter-spacing:6px;text-align:center;font-size:18px}
+
 /* Layout (Cottonil-style shop): utility line, scrolling announcement, centered-logo header + category nav, perks strip, banner slider, photo category tiles, centered product rows, collection grid, dark footer, mobile bottom bar. Admin = full-screen workspace. */
 :root{
   --bg:#FFFFFF; --soft:#F5F5F5; --ink:#232323; --muted:#707070; --line:#E8E8E8;
@@ -659,6 +678,8 @@ function brandName(){return DATA.settings.name_en||"MANCAVE";}
 function brandShort(){return String(brandName()).replace(/\.lb$/i,"").toUpperCase();}
 
 var PATHS={
+lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+bksp:'<path d="M21 5H8l-6 7 6 7h13z"/><path d="M16 9l-5 6M11 9l5 6"/>',
 search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
 heart:'<path d="M12 20s-7-4.4-9.2-8.6C1.3 8.4 3.2 5 6.6 5c2 0 3.4 1.1 4.4 2.5C12 6.1 13.4 5 15.4 5c3.4 0 5.3 3.4 3.8 6.4C19 15.6 12 20 12 20z"/>',
 bag:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
@@ -1025,7 +1046,7 @@ function renderAdminTop(){
   el.innerHTML='<div class="wrap adm-row"><div class="adm-title">'+logoHtml()+"<span>Store manager</span></div>"+
    '<span class="pill'+(S.dirty?" warn":"")+'">'+(S.syncing?"Loading the latest store…":S.dirty?(S.standalone&&!ghOn()?"Unsaved changes":"Unpublished changes"):(S.standalone&&!ghOn()?"No unsaved changes":"Live store is up to date"))+'</span><div class="adm-actions">'+
    (S.dirty?(S.confirm==="discard"?'<button class="ab red" data-a="discard-yes">Discard all changes</button><button class="ab" data-a="confirm-no">Keep editing</button>':'<button class="ab" data-a="discard">Discard</button>'):"")+
-   '<button class="ab go" data-a="publish"'+((!S.dirty||S.busy||S.syncing)?" disabled":"")+">"+(S.busy?"Publishing…":(S.standalone&&!ghOn())?"Download updated site":"Publish to website")+'</button><button class="ab" data-a="adm-close">'+(S.dirty?"Preview store":"View store")+"</button></div></div>"+
+   '<button class="ab go" data-a="publish"'+((!S.dirty||S.busy||S.syncing)?" disabled":"")+">"+(S.busy?"Publishing…":(S.standalone&&!ghOn())?"Download updated site":"Publish to website")+'</button><button class="ab" data-a="adm-close">'+(S.dirty?"Preview store":"View store")+"</button>"+(S.standalone&&pinSet()?'<button class="ab" data-a="lock-now" aria-label="Lock">'+ico("lock")+"Lock</button>":"")+"</div></div>"+
    '<div class="wrap tabs" role="tablist">'+tabs.map(function(t){return '<button class="tab" role="tab" data-a="atab" data-v="'+t[0]+'" aria-selected="'+(S.atab===t[0])+'">'+t[1]+(t[0]==="orders"&&newN?'<span class="nb">'+newN+"</span>":"")+"</button>";}).join("")+"</div>";
 }
 function renderAdminBody(){var el=$("admbody");if(!el)return;if(S.syncing){el.innerHTML='<div class="panel"><p class="muted">Loading the latest store from the website…</p></div>';return;}if(S.atab==="categories")el.innerHTML=adminCats();else if(S.atab==="banners")el.innerHTML=adminBanners();else if(S.atab==="settings")el.innerHTML=adminSettings();else if(S.atab==="orders"){el.innerHTML=adminOrders();}else{el.innerHTML=adminProducts();renderAdminTable();}}
@@ -1079,10 +1100,12 @@ function sf(k,label,o){
   var inp=o.area?'<textarea id="'+id+'" data-s="'+k+'"'+(o.rtl?' dir="rtl"':"")+">"+esc(v)+"</textarea>":'<input id="'+id+'" data-s="'+k+'" type="'+(o.num?"number":"text")+'"'+(o.num?' min="0" step="0.5" inputmode="decimal" data-num="1"':"")+(o.rtl?' dir="rtl"':"")+' value="'+esc(v==null?"":v)+'"'+(o.ph?' placeholder="'+esc(o.ph)+'"':"")+">";
   return '<div class="field'+(o.full?" full":"")+'"><label for="'+id+'">'+esc(label)+"</label>"+inp+(o.help?'<p class="help">'+esc(o.help)+"</p>":"")+"</div>";
 }
+function pinPanel(){if(!S.standalone)return "";var on=!!pinSet();
+  return '<div class="panel"><h3>Dashboard PIN</h3><p class="muted" style="margin-bottom:14px">'+(on?"The dashboard asks for a 4-digit PIN when it opens.":"No PIN yet. Anyone who opens this page sees the dashboard (they still can't publish or see orders without the keys).")+'</p><div class="pin-row"><input id="pin1" type="password" inputmode="numeric" maxlength="4" placeholder="New PIN" autocomplete="new-password"><input id="pin2" type="password" inputmode="numeric" maxlength="4" placeholder="Repeat" autocomplete="new-password"><button class="ab dark" data-a="pin-set">'+(on?"Change PIN":"Set PIN")+'</button>'+(on?'<button class="ab" data-a="pin-off">Remove PIN</button>':"")+'</div><p class="help">After changing it, tap Publish to website so it applies on every device.</p></div>';}
 function adminSettings(){
-  return ghPanel()+ordersPanel()+'<div class="panel"><h3>Logo</h3><div class="logo-set">'+logoHtml()+'<label class="ab file-btn">'+ico("image")+'Upload logo<input type="file" id="s-logo" accept="image/*"></label><p class="help">Square image works best. It shows in a circle.</p></div></div>'+
-   '<div class="panel"><h3>Ordering &amp; delivery</h3><div class="fgrid">'+sf("whatsapp","WhatsApp number for orders",{ph:"96171300884",help:"Country code + number, digits only. Every order is sent here."})+sf("currency","Currency symbol",{ph:"$"})+
-   sf("delivery_fee","Delivery fee",{num:true,help:"Set 0 to show “Confirmed on WhatsApp” instead of a fee."})+sf("free_over","Free delivery for orders over",{num:true,help:"Set 0 for no free-delivery offer."})+"</div></div>"+
+  return pinPanel()+ghPanel()+ordersPanel()+'<div class="panel"><h3>Logo</h3><div class="logo-set">'+logoHtml()+'<label class="ab file-btn">'+ico("image")+'Upload logo<input type="file" id="s-logo" accept="image/*"></label><p class="help">Square image works best. It shows in a circle.</p></div></div>'+
+   '<div class="panel"><h3>Ordering &amp; delivery</h3><div class="fgrid">'+sf("whatsapp","Contact number (shown at the bottom of the website)",{ph:"96171300884",help:"Country code + number, digits only."})+sf("currency","Currency symbol",{ph:"$"})+
+   sf("delivery_fee","Delivery fee",{num:true,help:"Set 0 to show “Confirmed when we call” instead of a fee."})+sf("free_over","Free delivery for orders over",{num:true,help:"Set 0 for no free-delivery offer."})+"</div></div>"+
    '<div class="panel"><h3>Top bar &amp; search</h3><div class="fgrid">'+sf("announce_en","Scrolling announcement (English)")+sf("announce_ar","Scrolling announcement (Arabic)",{rtl:true})+
    sf("trending_en","Trending searches (English)",{help:"Comma separated. Shown when someone opens search."})+sf("trending_ar","Trending searches (Arabic)",{rtl:true})+"</div></div>"+
    '<div class="panel"><h3>Brand</h3><div class="fgrid">'+sf("name_en","Store name (English)")+sf("name_ar","Store name (Arabic)",{rtl:true})+sf("tagline_en","Tagline under the logo (English)")+sf("tagline_ar","Tagline (Arabic)",{rtl:true})+
@@ -1221,7 +1244,45 @@ function ghErrMsg(e){var st=e&&e.status;if(st===401)return "The GitHub key isn't
 function parseSite(html){var m=/<script id="mc-data" type="application\/json">([\s\S]*?)<\/script>/.exec(html);if(!m)throw new Error("index.html doesn't contain the store data.");var im=/<script id="mc-img" type="application\/json">([\s\S]*?)<\/script>/.exec(html);return{data:m[1],imgs:im?im[1]:"{}"};}
 function applyLatest(html){var x=parseSite(html);JSON.parse(x.data);ORIG=x.data;loadData();try{IMG=JSON.parse(x.imgs)||{};}catch(e){IMG={};}IMG_READY=true;}
 function ghLoadLatest(){var r=ghRepo();return gh("/repos/"+r+"/git/ref/heads/"+GH.branch).then(function(ref){var sha=ref.object.sha;return gh("/repos/"+r+"/contents/index.html?ref="+sha,{accept:"application/vnd.github.raw",raw:true}).then(function(html){applyLatest(html);GH.head=sha;GH.loaded=true;GH.err="";});});}
+/* ---------- dashboard PIN ---------- */
+var LOCK={pin:"",msg:"",err:false};
+function pinHash(pin,salt){if(!(window.crypto&&crypto.subtle))return Promise.reject(new Error("nocrypto"));
+  return crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+":"+pin)).then(function(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return("0"+x.toString(16)).slice(-2);}).join("");});}
+function pinSet(){var v=String(DATA.settings.admin_pin||"");return /^[0-9a-z]+\$[0-9a-f]{64}$/.test(v)?v:"";}
+function lockState(){var l=lsGet("mc_lock",{});return{t:+l.t||0,u:+l.u||0};}
+function renderLock(){
+  var el=$("r-lock");if(!el){el=document.createElement("div");el.id="r-lock";document.body.appendChild(el);}
+  var wait=Math.max(0,Math.ceil((lockState().u-Date.now())/1000));
+  var dots="";for(var i=0;i<4;i++)dots+='<i class="'+(i<LOCK.pin.length?"on":"")+'"></i>';
+  var keys=[1,2,3,4,5,6,7,8,9].map(function(n){return '<button data-pin="'+n+'"'+(wait?" disabled":"")+">"+n+"</button>";}).join("")+'<span class="ghost"></span><button data-pin="0"'+(wait?" disabled":"")+'>0</button><button class="ghost" data-pin="del" aria-label="Delete">'+ico("bksp")+"</button>";
+  el.innerHTML='<div class="lockscr" role="dialog" aria-modal="true" aria-label="Dashboard locked"><div class="lock-box"><div class="logo-c">'+logoHtml()+'</div><h1>Store manager</h1>'+
+    '<p class="'+(LOCK.err||wait?"err":"")+'">'+esc(wait?"Too many wrong tries. Try again in "+wait+"s.":LOCK.msg||"Enter your 4-digit PIN")+'</p><div class="pin-dots" id="pindots">'+dots+'</div><div class="pin-pad">'+keys+"</div></div></div>";
+  if(wait){clearTimeout(LOCK.tm);LOCK.tm=setTimeout(renderLock,1000);}
+}
+function pinKey(k){
+  if(lockState().u>Date.now())return;
+  if(k==="del"){LOCK.pin=LOCK.pin.slice(0,-1);LOCK.err=false;LOCK.msg="";renderLock();return;}
+  if(LOCK.pin.length>=4||LOCK.busy)return;LOCK.pin+=k;LOCK.err=false;LOCK.msg="";renderLock();
+  if(LOCK.pin.length<4)return;
+  var v=pinSet().split("$");LOCK.busy=true;
+  pinHash(LOCK.pin,v[0]).then(function(h){LOCK.busy=false;
+    if(h===v[1]){lsSet("mc_lock",{});ssSet("mc_unlocked",pinSet());LOCK.pin="";var el=$("r-lock");if(el)el.remove();adminStart();return;}
+    var st=lockState();st.t++;if(st.t>=5){st.u=Date.now()+Math.min(300,30*Math.pow(2,Math.floor(st.t/5)-1))*1000;}lsSet("mc_lock",st);
+    LOCK.pin="";LOCK.err=true;LOCK.msg="Wrong PIN";renderLock();var d=$("pindots");if(d)d.classList.add("shake");
+  }).catch(function(){LOCK.busy=false;LOCK.pin="";LOCK.err=true;LOCK.msg="This browser can't check the PIN. Open the dashboard with https.";renderLock();});
+}
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-pin]");if(b&&!b.disabled)pinKey(b.getAttribute("data-pin"));});
+document.addEventListener("keydown",function(e){if(!$("r-lock"))return;if(/^[0-9]$/.test(e.key))pinKey(e.key);else if(e.key==="Backspace")pinKey("del");});
 function adminBoot(){
+  S.standalone=true;
+  var go=function(){if(pinSet()&&ssGet("mc_unlocked")!==pinSet()){renderLock();return;}adminStart();};
+  if(/^https?:$/.test(location.protocol)){
+    renderLock();$("r-lock").innerHTML='<div class="lockscr"><div class="lock-box"><p>Loading…</p></div></div>';
+    fetch("index.html?v="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}).then(function(h){applyLatest(h);}).catch(function(){}).then(function(){var el=$("r-lock");if(el)el.remove();go();});
+  }else go();
+}
+function lockNow(){try{sessionStorage.removeItem("mc_unlocked");}catch(e){}location.reload();}
+function adminStart(){
   S.standalone=true;S.canEdit=true;S.syncing=true;openAdmin();
   var done=function(){S.syncing=false;S.dirty=false;renderAll();if(!S.admin)openAdmin();};
   if(GH.token&&ghRepo()){ghLoadLatest().then(function(){done();toast("Loaded the latest store from the website.");}).catch(function(e){GH.err=ghErrMsg(e);GH.loaded=false;sameOrigin();});}
@@ -1358,6 +1419,11 @@ document.addEventListener("click",function(e){
   case "adm-close":S.admin=false;S.confirm=null;S.edit=null;renderAll();break;
   case "atab":S.atab=v;S.confirm=null;renderAdminTop();renderAdminBody();var ad=$("adm");if(ad)ad.scrollTop=0;break;
   case "publish":publish();break;
+  case "lock-now":lockNow();break;
+  case "pin-set":(function(){var a=($("pin1")||{}).value||"",b2=($("pin2")||{}).value||"";
+    if(!/^[0-9]{4}$/.test(a)){toast("The PIN must be exactly 4 digits.");return;}if(a!==b2){toast("The two PINs don't match.");return;}
+    var salt=Math.random().toString(36).slice(2,10);pinHash(a,salt).then(function(h){DATA.settings.admin_pin=salt+"$"+h;ssSet("mc_unlocked",DATA.settings.admin_pin);markDirty();renderAdminTop();renderAdminBody();toast("PIN set. Tap Publish to website to turn it on.");}).catch(function(){toast("This browser can't set a PIN. Open the dashboard with https.");});})();break;
+  case "pin-off":DATA.settings.admin_pin="";markDirty();renderAdminTop();renderAdminBody();toast("PIN removed. Tap Publish to website to apply.");break;
   case "discard":S.confirm="discard";renderAdminTop();break;
   case "discard-yes":loadData();S.dirty=false;S.confirm=null;renderAdmin();toast("Changes discarded.");break;
   case "confirm-no":S.confirm=null;renderAdminTop();renderAdminBody();break;
