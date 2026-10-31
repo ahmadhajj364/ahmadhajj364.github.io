@@ -3,7 +3,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
-<style id="mc-css">.st-live{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+<style id="mc-css">.st-bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:6px}
+.st-seg{margin:0}
+.st-nav{display:flex;align-items:center;gap:8px}
+.st-nav b{min-width:150px;text-align:center;font-size:15px}
+.st-dates{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.st-dates label{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.st-dates input{height:38px;padding:0 8px;border:1px solid var(--line);border-radius:4px;font:inherit;color:var(--ink)}
+.st-grid.st-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.st-col.fut i{background:transparent}
+.st-live{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .st-live .n{font-size:44px;font-weight:600;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
 .st-live .lbl{display:grid;gap:2px}
 .st-live .lbl b{font-size:16px;display:flex;align-items:center;gap:8px}
@@ -15,7 +24,7 @@
 .st-tile span{font-size:13px;color:var(--muted)}
 .st-tile .big{font-size:30px;font-weight:600;line-height:1.1;color:var(--ink);font-variant-numeric:tabular-nums}
 .st-tile .sub{font-size:13px;color:var(--muted)}
-.st-chart{position:relative;height:180px;display:grid;grid-template-columns:repeat(30,minmax(0,1fr));align-items:end;gap:2px;border-bottom:1px solid var(--line);margin-top:22px}
+.st-chart{position:relative;height:180px;padding-inline-start:30px;display:grid;grid-template-columns:repeat(30,minmax(0,1fr));align-items:end;gap:2px;border-bottom:1px solid var(--line);margin-top:22px}
 .st-chart .gl{position:absolute;inset-inline:0;border-top:1px dashed #E5E7EB;pointer-events:none}
 .st-chart .gl span{position:absolute;inset-inline-start:0;top:-18px;font-size:12px;color:var(--muted);background:#fff;padding-inline-end:4px}
 .st-col{position:relative;height:100%;display:flex;align-items:flex-end;justify-content:center;cursor:default}
@@ -25,7 +34,7 @@
 .st-col .tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--black);color:#fff;font-size:12px;padding:6px 8px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .1s;z-index:2}
 .st-col:hover .tip,.st-col:focus .tip{opacity:1}
 .st-col:first-child .tip{left:0;transform:none}.st-col:last-child .tip{left:auto;right:0;transform:none}
-.st-x{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
+.st-x{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px;padding-inline-start:30px}
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .wa-fab{position:fixed;z-index:60;inset-inline-end:16px;bottom:calc(16px + var(--bottombar));width:52px;height:52px;border-radius:50%;background:#25D366;color:#fff;display:grid;place-items:center;box-shadow:0 8px 24px -6px rgba(0,0,0,.35);transition:transform .15s}
 .wa-fab:hover{transform:scale(1.07)}
@@ -1321,25 +1330,50 @@ function loadStats(){if(!ordUrl()||!ordKey())return;S.stLoading=true;
   .catch(function(e){S.stLoading=false;S.stErr=e.code||"net";if(S.admin&&S.atab==="stats")renderAdminBody();});
   clearInterval(statTimer);statTimer=setInterval(function(){if(S.admin&&S.atab==="stats"&&!document.hidden)loadStats();else clearInterval(statTimer);},30000);}
 function fmtN(n){return Number(n||0).toLocaleString("en-US");}
+function monAdd(day,n){var y=+day.slice(0,4),m=+day.slice(5,7)-1+n;y+=Math.floor(m/12);m=((m%12)+12)%12;return y+"-"+String(m+1).padStart(2,"0")+"-01";}
+function monEnd(first){return dayAdd(monAdd(first,1),-1);}
+function fmtD(d,o){return new Date(d+"T12:00:00Z").toLocaleDateString("en-GB",Object.assign({timeZone:"UTC"},o||{day:"numeric",month:"short"}));}
+function statPeriod(today){var per=S.stPer||"month",off=S.stOff||0,a,b,title;
+  if(per==="day"){a=b=dayAdd(today,off);title=off===0?"Today, "+fmtD(a):off===-1?"Yesterday, "+fmtD(a):fmtD(a,{weekday:"long",day:"numeric",month:"long",year:"numeric"});}
+  else if(per==="week"){var wd=(new Date(today+"T12:00:00Z").getUTCDay()+6)%7;a=dayAdd(today,-wd+7*off);b=dayAdd(a,6);title=fmtD(a)+" – "+fmtD(b,{day:"numeric",month:"short",year:"numeric"});}
+  else if(per==="year"){var y=+today.slice(0,4)+off;a=y+"-01-01";b=y+"-12-31";title=String(y);}
+  else if(per==="custom"){a=S.stFrom||dayAdd(today,-29);b=S.stTo||today;if(a>b){var t=a;a=b;b=t;}title=fmtD(a,{day:"numeric",month:"short",year:"numeric"})+" – "+fmtD(b,{day:"numeric",month:"short",year:"numeric"});}
+  else{a=monAdd(today.slice(0,8)+"01",off);b=monEnd(a);title=fmtD(a,{month:"long",year:"numeric"});}
+  return{per:per,a:a,b:b,title:title,off:off};}
 function adminStats(){
   if(!ordUrl()||!ordKey())return '<div class="panel"><h3>Visitors</h3><p class="muted" style="margin-bottom:14px">Visitor numbers use the same connection as orders. Add the orders passcode in Store settings first.</p><button class="ab dark" data-a="atab" data-v="settings">Open Store settings</button></div>';
   if(S.stErr==="bad_action")return '<div class="panel"><h3>Visitors</h3><p class="muted">Visitor counting isn\'t switched on yet. The order system code (Google Apps Script) needs its one-time update, then visits start counting from that moment.</p></div>';
   if(S.stErr&&!S.stats)return '<div class="panel"><h3>Visitors</h3><p class="err" style="margin-bottom:14px">Couldn\'t load visitor numbers. Check the internet connection.</p><button class="ab" data-a="st-refresh">'+ico("refresh")+"Try again</button></div>";
   if(!S.stats)return '<div class="panel"><p class="muted">Loading visitor numbers…</p></div>';
-  var st=S.stats,today=st.today||bDay(Date.now()),R=statRanges(today),by={};(st.days||[]).forEach(function(x){by[x.d]=x;});
-  var sum=function(r){var v=0,p=0;(st.days||[]).forEach(function(x){if(x.d>=r[0]&&x.d<=r[1]){v+=x.v;p+=x.p;}});return{v:v,p:p};};
-  var ords=function(r){return (S.orders||[]).filter(function(o){var d=bDay(o.date);return o.status!=="Cancelled"&&d>=r[0]&&d<=r[1];}).length;};
-  var tile=function(k,label){var x=sum(R[k]),o=ords(R[k]);return '<div class="st-tile"><span>'+label+'</span><b class="big">'+fmtN(x.v)+'</b><span class="sub">visitors · '+fmtN(x.p)+" visits"+(S.orders?" · "+fmtN(o)+" order"+(o===1?"":"s"):"")+"</span></div>";};
-  var days=[];for(var i=29;i>=0;i--){var d=dayAdd(today,-i);days.push({d:d,v:(by[d]||{}).v||0,p:(by[d]||{}).p||0});}
-  var max=Math.max.apply(null,days.map(function(x){return x.v;}));var top=max<=5?5:max<=10?10:Math.ceil(max/(max<=50?10:max<=200?50:100))*(max<=50?10:max<=200?50:100);
-  var lab=function(d){var t=new Date(d+"T12:00:00Z");return t.toLocaleDateString("en-GB",{day:"numeric",month:"short",timeZone:"UTC"});};
-  var cols=days.map(function(x){var h=x.v?Math.max(2,Math.round(x.v/top*100)):0;return '<div class="st-col'+(x.d===today?" today":"")+'" tabindex="0" aria-label="'+lab(x.d)+": "+x.v+" visitors, "+x.p+' visits"><i style="height:'+h+'%"></i><span class="tip">'+lab(x.d)+(x.d===today?" (today)":"")+" · <b>"+fmtN(x.v)+"</b> visitors · "+fmtN(x.p)+" visits</span></div>";}).join("");
-  var table='<table class="vh"><caption>Visitors, last 30 days</caption><tr><th>Day</th><th>Visitors</th><th>Visits</th></tr>'+days.map(function(x){return "<tr><td>"+x.d+"</td><td>"+x.v+"</td><td>"+x.p+"</td></tr>";}).join("")+"</table>";
+  var st=S.stats,today=st.today||bDay(Date.now()),by={};(st.days||[]).forEach(function(x){by[x.d]=x;});
+  var P=statPeriod(today),end=P.b>today?today:P.b;
+  var sum={v:0,p:0};(st.days||[]).forEach(function(x){if(x.d>=P.a&&x.d<=P.b){sum.v+=x.v;sum.p+=x.p;}});
+  var ordN=(S.orders||[]).filter(function(o){var d=bDay(o.date);return o.status!=="Cancelled"&&d>=P.a&&d<=P.b;}).length;
+  /* bars: one per day, or one per month for a year / long custom range */
+  var cols=[],span=Math.round((new Date(P.b+"T12:00:00Z")-new Date(P.a+"T12:00:00Z"))/864e5)+1,chartA=P.a,chartB=P.b,note="";
+  if(P.per==="day"){chartB=P.a;chartA=dayAdd(P.a,-6);note="Last 7 days";}
+  if(P.per==="year"||(P.per==="custom"&&span>62)){
+    for(var m=chartA.slice(0,8)+"01";m<=chartB;m=monAdd(m,1)){var me=monEnd(m),v=0,pp=0;(st.days||[]).forEach(function(x){if(x.d>=m&&x.d<=me){v+=x.v;pp+=x.p;}});
+      cols.push({k:m,lab:fmtD(m,{month:"short"})+(P.per==="custom"?" "+m.slice(2,4):""),tip:fmtD(m,{month:"long",year:"numeric"}),v:v,p:pp,now:today>=m&&today<=me,fut:m>today});}
+  }else{for(var d=chartA;d<=chartB;d=dayAdd(d,1)){var x=by[d]||{};cols.push({k:d,lab:fmtD(d),tip:fmtD(d,{weekday:"short",day:"numeric",month:"short"})+(d===today?" (today)":""),v:x.v||0,p:x.p||0,now:d===today,fut:d>today});}}
+  var max=Math.max.apply(null,cols.map(function(c){return c.v;}).concat([0]));
+  var step=max<=5?5:max<=10?10:max<=50?10:max<=200?50:max<=1000?100:500,top=Math.max(step,Math.ceil(max/step)*step);
+  var bars=cols.map(function(c){var h=c.v?Math.max(2,Math.round(c.v/top*100)):0;return '<div class="st-col'+(c.now?" today":"")+(c.fut?" fut":"")+'" tabindex="0" aria-label="'+esc(c.tip)+": "+c.v+" visitors, "+c.p+' visits"><i style="height:'+h+'%"></i><span class="tip">'+esc(c.tip)+" · <b>"+fmtN(c.v)+"</b> visitors · "+fmtN(c.p)+" visits</span></div>";}).join("");
+  var n=cols.length,mid=cols[Math.floor((n-1)/2)];
+  var table='<table class="vh"><caption>Visitors, '+esc(P.title)+'</caption><tr><th>Period</th><th>Visitors</th><th>Visits</th></tr>'+cols.map(function(c){return "<tr><td>"+esc(c.tip)+"</td><td>"+c.v+"</td><td>"+c.p+"</td></tr>";}).join("")+"</table>";
+  var pb=function(k,l){return '<button data-a="st-per" data-v="'+k+'" aria-pressed="'+(P.per===k)+'">'+l+"</button>";};
+  var canNext=P.per!=="custom"&&P.off<0;
+  var busiest=null;cols.forEach(function(c){if(c.v&&(!busiest||c.v>busiest.v))busiest=c;});
   return '<div class="panel"><div class="st-live"><div class="n">'+fmtN(st.live)+'</div><div class="lbl"><b><span class="st-dot"></span>Online now</b><span class="muted" style="font-size:13px">People on the website in the last 3 minutes</span></div>'+
     '<button class="ab" style="margin-inline-start:auto" data-a="st-refresh">'+ico("refresh")+(S.stLoading?"Refreshing…":"Refresh")+"</button></div></div>"+
-    '<div class="st-grid">'+tile("today","Today")+tile("week","This week")+tile("month","This month")+tile("year","This year")+"</div>"+
-    '<div class="panel"><h3>Visitors, last 30 days</h3><div class="st-chart" role="img" aria-label="Visitors per day for the last 30 days. Highest: '+fmtN(max)+'">'+
-    '<div class="gl" style="bottom:100%"><span>'+fmtN(top)+'</span></div><div class="gl" style="bottom:50%"><span>'+fmtN(top/2)+"</span></div>"+cols+'</div><div class="st-x"><span>'+lab(days[0].d)+"</span><span>"+lab(days[15].d)+"</span><span>Today</span></div>"+table+
+    '<div class="panel"><div class="st-bar"><div class="ord-filters st-seg">'+pb("day","Day")+pb("week","Week")+pb("month","Month")+pb("year","Year")+pb("custom","Custom dates")+"</div>"+
+    (P.per==="custom"?'<div class="st-dates"><label>From <input type="date" id="st-from" value="'+P.a+'" max="'+today+'"></label><label>To <input type="date" id="st-to" value="'+P.b+'" max="'+today+'"></label><button class="ab dark" data-a="st-apply">Show</button></div>':
+      '<div class="st-nav"><button class="sq" data-a="st-step" data-v="-1" aria-label="Previous">'+ico("left","flip")+'</button><b>'+esc(P.title)+'</b><button class="sq" data-a="st-step" data-v="1" aria-label="Next"'+(canNext?"":" disabled")+">"+ico("right","flip")+(P.off!==0?'</button><button class="ab" data-a="st-now">'+(P.per==="day"?"Today":"Current")+"</button>":"</button>")+"</div>")+"</div>"+
+    '<div class="st-grid st-3"><div class="st-tile"><span>Visitors</span><b class="big">'+fmtN(sum.v)+'</b></div><div class="st-tile"><span>Visits</span><b class="big">'+fmtN(sum.p)+'</b></div><div class="st-tile"><span>Orders</span><b class="big">'+(S.orders?fmtN(ordN):"–")+"</b></div></div>"+
+    '<h3 style="margin-top:6px">'+(note||"Visitors"+(P.per==="year"||(P.per==="custom"&&span>62)?" per month":" per day"))+(busiest?'<span class="muted" style="font-weight:400;font-size:13px;margin-inline-start:8px">Busiest: '+esc(busiest.tip.replace(" (today)",""))+" ("+fmtN(busiest.v)+")</span>":"")+"</h3>"+
+    '<div class="st-chart" style="grid-template-columns:repeat('+n+',minmax(0,1fr))" role="img" aria-label="Visitors for '+esc(P.title)+'. Highest: '+fmtN(max)+'">'+
+    '<div class="gl" style="bottom:100%"><span>'+fmtN(top)+'</span></div><div class="gl" style="bottom:50%"><span>'+fmtN(top/2)+"</span></div>"+bars+'</div>'+
+    '<div class="st-x"><span>'+esc(cols[0].lab)+"</span>"+(n>2?"<span>"+esc(mid.lab)+"</span>":"")+"<span>"+esc(cols[n-1].now?(P.per==="year"?cols[n-1].lab:"Today"):cols[n-1].lab)+"</span></div>"+table+
     '<p class="muted" style="font-size:13px;margin-top:14px">A visitor is one phone or computer, counted once a day. A visit is each time the website is opened. Devices with the orders passcode (yours and the client\'s) aren\'t counted. '+(S.stAt?"Updated "+S.stAt.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})+".":"")+"</p></div>";
 }
 /* count visits on the shop (never on the dashboard, never on the owner's devices) */
@@ -1529,6 +1563,10 @@ document.addEventListener("click",function(e){
   case "publish":publish();break;
   case "lock-now":lockNow();break;
   case "st-refresh":loadStats();break;
+  case "st-per":S.stPer=v;S.stOff=0;renderAdminBody();break;
+  case "st-step":S.stOff=Math.min(0,(S.stOff||0)+parseInt(v,10));renderAdminBody();break;
+  case "st-now":S.stOff=0;renderAdminBody();break;
+  case "st-apply":S.stFrom=($("st-from")||{}).value||"";S.stTo=($("st-to")||{}).value||"";renderAdminBody();break;
   case "pop-close":closeOrdPop();break;
   case "pop-view":closeOrdPop();if(!S.admin)openAdmin("orders");S.atab="orders";S.ordFilter="open";S.ordQ="";renderAdminTop();renderAdminBody();var ad=$("adm");if(ad)ad.scrollTop=0;break;
   case "wa-instead":goWa(waLink(orderText()));break;
