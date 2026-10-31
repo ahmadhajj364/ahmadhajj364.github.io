@@ -3,7 +3,31 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
-<style id="mc-css">.wa-fab{position:fixed;z-index:60;inset-inline-end:16px;bottom:calc(16px + var(--bottombar));width:52px;height:52px;border-radius:50%;background:#25D366;color:#fff;display:grid;place-items:center;box-shadow:0 8px 24px -6px rgba(0,0,0,.35);transition:transform .15s}
+<style id="mc-css">.st-live{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.st-live .n{font-size:44px;font-weight:600;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.st-live .lbl{display:grid;gap:2px}
+.st-live .lbl b{font-size:16px;display:flex;align-items:center;gap:8px}
+.st-dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(30,122,76,.5);animation:stpulse 1.8s infinite}
+@keyframes stpulse{70%{box-shadow:0 0 0 9px rgba(30,122,76,0)}100%{box-shadow:0 0 0 0 rgba(30,122,76,0)}}
+.st-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
+@media (max-width:760px){.st-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.st-tile{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:4px;min-width:0}
+.st-tile span{font-size:13px;color:var(--muted)}
+.st-tile .big{font-size:30px;font-weight:600;line-height:1.1;color:var(--ink);font-variant-numeric:tabular-nums}
+.st-tile .sub{font-size:13px;color:var(--muted)}
+.st-chart{position:relative;height:180px;display:grid;grid-template-columns:repeat(30,minmax(0,1fr));align-items:end;gap:2px;border-bottom:1px solid var(--line);margin-top:22px}
+.st-chart .gl{position:absolute;inset-inline:0;border-top:1px dashed #E5E7EB;pointer-events:none}
+.st-chart .gl span{position:absolute;inset-inline-start:0;top:-18px;font-size:12px;color:var(--muted);background:#fff;padding-inline-end:4px}
+.st-col{position:relative;height:100%;display:flex;align-items:flex-end;justify-content:center;cursor:default}
+.st-col i{display:block;width:100%;max-width:18px;background:#1E7A4C;border-radius:4px 4px 0 0;min-height:0}
+.st-col.today i{background:#145536}
+.st-col:hover i,.st-col:focus i{opacity:.75}
+.st-col .tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--black);color:#fff;font-size:12px;padding:6px 8px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .1s;z-index:2}
+.st-col:hover .tip,.st-col:focus .tip{opacity:1}
+.st-col:first-child .tip{left:0;transform:none}.st-col:last-child .tip{left:auto;right:0;transform:none}
+.st-x{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wa-fab{position:fixed;z-index:60;inset-inline-end:16px;bottom:calc(16px + var(--bottombar));width:52px;height:52px;border-radius:50%;background:#25D366;color:#fff;display:grid;place-items:center;box-shadow:0 8px 24px -6px rgba(0,0,0,.35);transition:transform .15s}
 .wa-fab:hover{transform:scale(1.07)}
 .wa-fab:active{transform:scale(.95)}
 .wa-fab svg{width:28px;height:28px;fill:#fff}
@@ -1064,14 +1088,14 @@ function markDirty(){if(!S.dirty){S.dirty=true;renderAdminTop();}}
 function renderAdmin(){var r=$("r-admin");if(!S.admin){r.innerHTML="";return;}r.innerHTML='<div class="adm" id="adm" role="dialog" aria-modal="true" aria-label="Store manager"><div class="adm-top" id="admtop"></div><div class="wrap adm-body" id="admbody"></div></div>';renderAdminTop();renderAdminBody();}
 function renderAdminTop(){
   var el=$("admtop");if(!el)return;
-  var tabs=[["orders","Orders"],["products","Products"],["banners","Banners"],["categories","Categories"],["settings","Store settings"]];var newN=(S.orders||[]).filter(function(o){return o.status==="New";}).length;
+  var tabs=[["orders","Orders"],["stats","Visitors"],["products","Products"],["banners","Banners"],["categories","Categories"],["settings","Store settings"]];var newN=(S.orders||[]).filter(function(o){return o.status==="New";}).length;
   el.innerHTML='<div class="wrap adm-row"><div class="adm-title">'+logoHtml()+"<span>Store manager</span></div>"+
    '<span class="pill'+(S.dirty?" warn":"")+'">'+(S.syncing?"Loading the latest store…":S.dirty?(S.standalone&&!ghOn()?"Unsaved changes":"Unpublished changes"):(S.standalone&&!ghOn()?"No unsaved changes":"Live store is up to date"))+'</span><div class="adm-actions">'+
    (S.dirty?(S.confirm==="discard"?'<button class="ab red" data-a="discard-yes">Discard all changes</button><button class="ab" data-a="confirm-no">Keep editing</button>':'<button class="ab" data-a="discard">Discard</button>'):"")+
    '<button class="ab go" data-a="publish"'+((!S.dirty||S.busy||S.syncing)?" disabled":"")+">"+(S.busy?"Publishing…":(S.standalone&&!ghOn())?"Download updated site":"Publish to website")+'</button><button class="ab" data-a="adm-close">'+(S.dirty?"Preview store":"View store")+"</button>"+(S.standalone&&pinSet()?'<button class="ab" data-a="lock-now" aria-label="Lock">'+ico("lock")+"Lock</button>":"")+"</div></div>"+
    '<div class="wrap tabs" role="tablist">'+tabs.map(function(t){return '<button class="tab" role="tab" data-a="atab" data-v="'+t[0]+'" aria-selected="'+(S.atab===t[0])+'">'+t[1]+(t[0]==="orders"&&newN?'<span class="nb">'+newN+"</span>":"")+"</button>";}).join("")+"</div>";
 }
-function renderAdminBody(){var el=$("admbody");if(!el)return;if(S.syncing){el.innerHTML='<div class="panel"><p class="muted">Loading the latest store from the website…</p></div>';return;}if(S.atab==="categories")el.innerHTML=adminCats();else if(S.atab==="banners")el.innerHTML=adminBanners();else if(S.atab==="settings")el.innerHTML=adminSettings();else if(S.atab==="orders"){el.innerHTML=adminOrders();}else{el.innerHTML=adminProducts();renderAdminTable();}}
+function renderAdminBody(){var el=$("admbody");if(!el)return;if(S.syncing){el.innerHTML='<div class="panel"><p class="muted">Loading the latest store from the website…</p></div>';return;}if(S.atab==="categories")el.innerHTML=adminCats();else if(S.atab==="banners")el.innerHTML=adminBanners();else if(S.atab==="settings")el.innerHTML=adminSettings();else if(S.atab==="orders"){el.innerHTML=adminOrders();}else if(S.atab==="stats"){el.innerHTML=adminStats();}else{el.innerHTML=adminProducts();renderAdminTable();}}
 function sizeLabel(){var mb=new Blob([buildDoc()]).size/1048576;return(mb<0.1?"<0.1":mb.toFixed(1))+" MB of 16 MB";}
 function adminProducts(){
   var ps=DATA.products,smp=ps.filter(function(p){return p.sample;}).length;
@@ -1286,6 +1310,48 @@ function ghErrMsg(e){var st=e&&e.status;if(st===401)return "The GitHub key isn't
 function parseSite(html){var m=/<script id="mc-data" type="application\/json">([\s\S]*?)<\/script>/.exec(html);if(!m)throw new Error("index.html doesn't contain the store data.");var im=/<script id="mc-img" type="application\/json">([\s\S]*?)<\/script>/.exec(html);return{data:m[1],imgs:im?im[1]:"{}"};}
 function applyLatest(html){var x=parseSite(html);JSON.parse(x.data);ORIG=x.data;loadData();try{IMG=JSON.parse(x.imgs)||{};}catch(e){IMG={};}IMG_READY=true;}
 function ghLoadLatest(){var r=ghRepo();return gh("/repos/"+r+"/git/ref/heads/"+GH.branch).then(function(ref){var sha=ref.object.sha;return gh("/repos/"+r+"/contents/index.html?ref="+sha,{accept:"application/vnd.github.raw",raw:true}).then(function(html){applyLatest(html);GH.head=sha;GH.loaded=true;GH.err="";});});}
+
+/* ---------- visitors ---------- */
+function bDay(d){try{return new Date(d).toLocaleDateString("en-CA",{timeZone:"Asia/Beirut"});}catch(e){return "";}}
+function dayAdd(day,n){var d=new Date(day+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
+function statRanges(today){var d=new Date(today+"T12:00:00Z"),wd=(d.getUTCDay()+6)%7;return{today:[today,today],week:[dayAdd(today,-wd),today],month:[today.slice(0,8)+"01",today],year:[today.slice(0,5)+"01-01",today]};}
+var statTimer=null;
+function loadStats(){if(!ordUrl()||!ordKey())return;S.stLoading=true;
+  ordApi({action:"stats",key:ordKey()}).then(function(j){S.stats=j;S.stErr="";S.stAt=new Date();S.stLoading=false;if(S.admin&&S.atab==="stats")renderAdminBody();})
+  .catch(function(e){S.stLoading=false;S.stErr=e.code||"net";if(S.admin&&S.atab==="stats")renderAdminBody();});
+  clearInterval(statTimer);statTimer=setInterval(function(){if(S.admin&&S.atab==="stats"&&!document.hidden)loadStats();else clearInterval(statTimer);},30000);}
+function fmtN(n){return Number(n||0).toLocaleString("en-US");}
+function adminStats(){
+  if(!ordUrl()||!ordKey())return '<div class="panel"><h3>Visitors</h3><p class="muted" style="margin-bottom:14px">Visitor numbers use the same connection as orders. Add the orders passcode in Store settings first.</p><button class="ab dark" data-a="atab" data-v="settings">Open Store settings</button></div>';
+  if(S.stErr==="bad_action")return '<div class="panel"><h3>Visitors</h3><p class="muted">Visitor counting isn\'t switched on yet. The order system code (Google Apps Script) needs its one-time update, then visits start counting from that moment.</p></div>';
+  if(S.stErr&&!S.stats)return '<div class="panel"><h3>Visitors</h3><p class="err" style="margin-bottom:14px">Couldn\'t load visitor numbers. Check the internet connection.</p><button class="ab" data-a="st-refresh">'+ico("refresh")+"Try again</button></div>";
+  if(!S.stats)return '<div class="panel"><p class="muted">Loading visitor numbers…</p></div>';
+  var st=S.stats,today=st.today||bDay(Date.now()),R=statRanges(today),by={};(st.days||[]).forEach(function(x){by[x.d]=x;});
+  var sum=function(r){var v=0,p=0;(st.days||[]).forEach(function(x){if(x.d>=r[0]&&x.d<=r[1]){v+=x.v;p+=x.p;}});return{v:v,p:p};};
+  var ords=function(r){return (S.orders||[]).filter(function(o){var d=bDay(o.date);return o.status!=="Cancelled"&&d>=r[0]&&d<=r[1];}).length;};
+  var tile=function(k,label){var x=sum(R[k]),o=ords(R[k]);return '<div class="st-tile"><span>'+label+'</span><b class="big">'+fmtN(x.v)+'</b><span class="sub">visitors · '+fmtN(x.p)+" visits"+(S.orders?" · "+fmtN(o)+" order"+(o===1?"":"s"):"")+"</span></div>";};
+  var days=[];for(var i=29;i>=0;i--){var d=dayAdd(today,-i);days.push({d:d,v:(by[d]||{}).v||0,p:(by[d]||{}).p||0});}
+  var max=Math.max.apply(null,days.map(function(x){return x.v;}));var top=max<=5?5:max<=10?10:Math.ceil(max/(max<=50?10:max<=200?50:100))*(max<=50?10:max<=200?50:100);
+  var lab=function(d){var t=new Date(d+"T12:00:00Z");return t.toLocaleDateString("en-GB",{day:"numeric",month:"short",timeZone:"UTC"});};
+  var cols=days.map(function(x){var h=x.v?Math.max(2,Math.round(x.v/top*100)):0;return '<div class="st-col'+(x.d===today?" today":"")+'" tabindex="0" aria-label="'+lab(x.d)+": "+x.v+" visitors, "+x.p+' visits"><i style="height:'+h+'%"></i><span class="tip">'+lab(x.d)+(x.d===today?" (today)":"")+" · <b>"+fmtN(x.v)+"</b> visitors · "+fmtN(x.p)+" visits</span></div>";}).join("");
+  var table='<table class="vh"><caption>Visitors, last 30 days</caption><tr><th>Day</th><th>Visitors</th><th>Visits</th></tr>'+days.map(function(x){return "<tr><td>"+x.d+"</td><td>"+x.v+"</td><td>"+x.p+"</td></tr>";}).join("")+"</table>";
+  return '<div class="panel"><div class="st-live"><div class="n">'+fmtN(st.live)+'</div><div class="lbl"><b><span class="st-dot"></span>Online now</b><span class="muted" style="font-size:13px">People on the website in the last 3 minutes</span></div>'+
+    '<button class="ab" style="margin-inline-start:auto" data-a="st-refresh">'+ico("refresh")+(S.stLoading?"Refreshing…":"Refresh")+"</button></div></div>"+
+    '<div class="st-grid">'+tile("today","Today")+tile("week","This week")+tile("month","This month")+tile("year","This year")+"</div>"+
+    '<div class="panel"><h3>Visitors, last 30 days</h3><div class="st-chart" role="img" aria-label="Visitors per day for the last 30 days. Highest: '+fmtN(max)+'">'+
+    '<div class="gl" style="bottom:100%"><span>'+fmtN(top)+'</span></div><div class="gl" style="bottom:50%"><span>'+fmtN(top/2)+"</span></div>"+cols+'</div><div class="st-x"><span>'+lab(days[0].d)+"</span><span>"+lab(days[15].d)+"</span><span>Today</span></div>"+table+
+    '<p class="muted" style="font-size:13px;margin-top:14px">A visitor is one phone or computer, counted once a day. A visit is each time the website is opened. Devices with the orders passcode (yours and the client\'s) aren\'t counted. '+(S.stAt?"Updated "+S.stAt.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})+".":"")+"</p></div>";
+}
+/* count visits on the shop (never on the dashboard, never on the owner's devices) */
+function beacon(o){if(!ordUrl())return;var b=JSON.stringify(o);try{if(navigator.sendBeacon&&navigator.sendBeacon(ordUrl(),new Blob([b],{type:"text/plain"})))return;}catch(e){}try{fetch(ordUrl(),{method:"POST",body:b,keepalive:true,mode:"no-cors"});}catch(e){}}
+function track(){try{
+  if(S.standalone||S.canEdit||!ordUrl()||(navigator.webdriver&&!window.__MC_TRACK)||ordKey())return;
+  var id=lsGet("mc_vid","");if(!/^[a-z0-9]{6,40}$/.test(id)){id=(Math.random().toString(36).slice(2)+Date.now().toString(36)).replace(/[^a-z0-9]/g,"").slice(0,20);lsSet("mc_vid",id);}
+  var day=bDay(Date.now()),isNew=lsGet("mc_vday","")!==day;if(isNew)lsSet("mc_vday",day);
+  beacon({t:"hit",v:id,n:isNew?1:0});
+  setInterval(function(){if(!document.hidden)beacon({t:"hb",v:id});},90000);
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)beacon({t:"hb",v:id});});
+}catch(e){}}
 /* ---------- dashboard PIN ---------- */
 var LOCK={pin:"",msg:"",err:false};
 function pinHash(pin,salt){if(!(window.crypto&&crypto.subtle))return Promise.reject(new Error("nocrypto"));
@@ -1459,9 +1525,10 @@ document.addEventListener("click",function(e){
   /* admin */
   case "admin":openAdmin();break;
   case "adm-close":S.admin=false;S.confirm=null;S.edit=null;renderAll();break;
-  case "atab":S.atab=v;S.confirm=null;renderAdminTop();renderAdminBody();var ad=$("adm");if(ad)ad.scrollTop=0;break;
+  case "atab":S.atab=v;S.confirm=null;renderAdminTop();renderAdminBody();if(v==="stats")loadStats();var ad=$("adm");if(ad)ad.scrollTop=0;break;
   case "publish":publish();break;
   case "lock-now":lockNow();break;
+  case "st-refresh":loadStats();break;
   case "pop-close":closeOrdPop();break;
   case "pop-view":closeOrdPop();if(!S.admin)openAdmin("orders");S.atab="orders";S.ordFilter="open";S.ordQ="";renderAdminTop();renderAdminBody();var ad=$("adm");if(ad)ad.scrollTop=0;break;
   case "wa-instead":goWa(waLink(orderText()));break;
@@ -1557,6 +1624,7 @@ try{history.replaceState(snap(),"");}catch(e){}
 window.MC_IMG();document.addEventListener("DOMContentLoaded",function(){window.MC_IMG();});
 (function(){var x0=null,y0=0;document.addEventListener("touchstart",function(e){var t=e.target&&e.target.closest&&e.target.closest(".slider");if(!t){x0=null;return;}x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});document.addEventListener("touchend",function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.2){var rtl=document.documentElement.dir==="rtl";setSlide(S.slide+(((dx<0)!==rtl)?1:-1));startAuto();}},{passive:true});})();
 if(!(window.claude&&typeof window.claude.use==="function")&&(location.hash==="#admin"||window.__MC_ADMIN===true)){adminBoot();}
+else if(!(window.claude&&typeof window.claude.use==="function")){setTimeout(track,1200);}
 if(window.claude&&typeof window.claude.use==="function"){
   window.claude.use("artifact").then(function(a){cap.artifact=a;checkEdit();}).catch(function(){});
   window.claude.use("user").then(function(u){cap.user=u;checkEdit();}).catch(function(){});
