@@ -3,7 +3,24 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
-<style id="mc-css">.st-bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:6px}
+<style id="mc-css">.ar-head{display:flex;flex-wrap:wrap;gap:12px 20px;justify-content:space-between;align-items:flex-start}
+.ar-head p{margin:4px 0 0;max-width:640px;font-size:14px}
+.ar-ctl{display:flex;gap:8px;align-items:center}
+.ar-ctl .sel{height:40px;min-width:200px}
+.ar-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+@media (max-width:560px){.ar-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+.ar-tile{position:relative;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none;cursor:grab;transition:box-shadow .15s}
+.ar-tile img,.ar-tile .ph{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;pointer-events:none}
+.ar-tile.out img{opacity:.55;filter:grayscale(.6)}
+.ar-tile.dragging{opacity:.55;box-shadow:0 0 0 2px var(--ok) inset;cursor:grabbing}
+.ar-n{position:absolute;top:8px;inset-inline-start:8px;min-width:26px;height:26px;padding:0 6px;border-radius:13px;background:var(--black);color:#fff;font-size:13px;font-weight:600;display:grid;place-items:center;z-index:1}
+.ar-grip{position:absolute;top:6px;inset-inline-end:6px;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.92);display:grid;place-items:center;font-size:18px;letter-spacing:-2px;color:var(--ink);touch-action:none;cursor:grab;z-index:1;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.ar-t{padding:8px 10px 4px;display:grid;gap:2px;min-width:0}
+.ar-t b{font-size:13px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ar-t span{font-size:12px;color:var(--muted)}
+.ar-b{display:flex;gap:6px;padding:6px 10px 10px;margin-top:auto}
+.ar-b .sq{flex:1;height:34px}
+.st-bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:6px}
 .st-seg{margin:0}
 .st-nav{display:flex;align-items:center;gap:8px}
 .st-nav b{min-width:150px;text-align:center;font-size:15px}
@@ -655,7 +672,7 @@ function ssGet(k){try{var v=sessionStorage.getItem(k);return v?JSON.parse(v):nul
 function ssSet(k,v){try{sessionStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function ssDel(k){try{sessionStorage.removeItem(k);}catch(e){}}
 
-var S={lang:lsGet("mc_lang","en"),page:"home",cat:"all",sub:"all",q:"",sort:"new",saleOnly:false,view:null,sel:null,drawer:null,search:false,slide:0,
+var S={lang:lsGet("mc_lang","en"),page:"home",cat:"all",sub:"all",q:"",sort:"rec",saleOnly:false,view:null,sel:null,drawer:null,search:false,slide:0,
   cart:lsGet("mc_cart",[]),wish:lsGet("mc_wish",[]),form:lsGet("mc_form",{name:"",phone:"",area:"",address:"",notes:""}),coErr:false,
   admin:false,atab:"products",aq:"",acat:"all",edit:null,confirm:null,dirty:false,busy:false,canEdit:false};
 if(S.lang!=="ar")S.lang="en";
@@ -677,7 +694,7 @@ see_all:"See all {n} results",no_match:"No products match “{q}”. Try another
 perk1:"Delivery all over Lebanon",perk2:"Cash on delivery",perk3:"Easy online checkout",shop_now:"Shop now",order_wa:"Order on WhatsApp",
 main_cats:"Main Categories",featured:"Featured Products",view_all:"View all",items:"{n} products",item1:"1 product",
 sale:"Sale",sale_pct:"Sale {n}%",sold_out:"Sold out",more_sizes:"More sizes available",quick_add:"Quick add",quick_view:"Quick view",
-on_sale:"On sale",sort_new:"Newest",sort_low:"Price: low to high",sort_high:"Price: high to low",sort_l:"Sort",
+on_sale:"On sale",sort_rec:"Recommended",sort_new:"Newest",sort_low:"Price: low to high",sort_high:"Price: high to low",sort_l:"Sort",
 sample_note:"Photos are from MANCAVE.lb's Instagram. Prices are examples until the real price list is added.",
 empty_grid:"Nothing here yet. Try another category or clear the filters.",clear:"Clear filters",
 add:"Add to cart",added:"Added to cart",size:"Size",color:"Color",qty:"Quantity",pick_size:"Choose a size first.",order_this:"Order this on WhatsApp",
@@ -694,7 +711,7 @@ see_all:"عرض كل النتائج ({n})",no_match:"لا توجد منتجات 
 perk1:"توصيل لكل لبنان",perk2:"الدفع عند الاستلام",perk3:"طلب سهل عبر الموقع",shop_now:"تسوّق الآن",order_wa:"اطلب عبر واتساب",
 main_cats:"الفئات الرئيسية",featured:"منتجات مميزة",view_all:"عرض الكل",items:"{n} منتجات",item1:"منتج واحد",
 sale:"تخفيض",sale_pct:"خصم {n}%",sold_out:"نفدت الكمية",more_sizes:"مقاسات متعددة",quick_add:"أضف بسرعة",quick_view:"عرض سريع",
-on_sale:"تخفيضات",sort_new:"الأحدث",sort_low:"السعر: من الأقل",sort_high:"السعر: من الأعلى",sort_l:"ترتيب",
+on_sale:"تخفيضات",sort_rec:"المقترح",sort_new:"الأحدث",sort_low:"السعر: من الأقل",sort_high:"السعر: من الأعلى",sort_l:"ترتيب",
 sample_note:"الصور من إنستغرام مان كيف. الأسعار أمثلة لحين إضافة لائحة الأسعار الحقيقية.",
 empty_grid:"لا يوجد شيء هنا بعد. جرّب فئة أخرى أو امسح الفلاتر.",clear:"امسح الفلاتر",
 add:"أضف إلى السلة",added:"تمت الإضافة إلى السلة",size:"المقاس",color:"اللون",qty:"الكمية",pick_size:"اختر المقاس أولاً.",order_this:"اطلب هذا المنتج عبر واتساب",
@@ -758,6 +775,7 @@ function matches(p,q){var c=catById(p.cat),so=subObj(p.cat,p.sub);return[so&&so.
 function sorted(arr){
   return arr.slice().sort(function(a,b){
     if(!!a.stock!==!!b.stock)return a.stock?-1:1;
+    if(S.sort==="rec"){var ao=typeof a.ord==="number",bo=typeof b.ord==="number";if(ao&&bo&&a.ord!==b.ord)return a.ord-b.ord;if(ao!==bo)return ao?-1:1;return(b.created||0)-(a.created||0);}
     if(S.sort!=="new"&&priced(a)!==priced(b))return priced(a)?-1:1;
     if(S.sort==="low")return a.price-b.price;if(S.sort==="high")return b.price-a.price;
     return(b.created||0)-(a.created||0);});
@@ -887,7 +905,7 @@ function renderCollection(){
   var h='<div class="wrap"><div class="crumbs"><button data-a="home">'+esc(T("home"))+"</button><span>/</span>"+(so?'<button data-a="col" data-id="'+esc(c.id)+'">'+esc(L(c,"name"))+"</button><span>/</span>":"")+"<span>"+esc(title)+'</span></div><div class="col-h"><h1>'+esc(title)+'</h1><p class="muted" id="ccount"></p></div>'+
    '<div class="toolbar"><div class="chips catchips"><button class="chip" data-a="col" data-id="all" aria-pressed="'+(S.cat==="all")+'">'+esc(T("all"))+"</button>"+
    visCats().map(function(k){return '<button class="chip" data-a="col" data-id="'+esc(k.id)+'" aria-pressed="'+(S.cat===k.id)+'">'+esc(L(k,"name"))+"</button>";}).join("")+"</div>"+
-   '<div class="tb-r"><button class="toggle" data-a="sale" aria-pressed="'+S.saleOnly+'">'+esc(T("on_sale"))+'</button><label class="vh" for="sort">'+esc(T("sort_l"))+'</label><select class="sel" id="sort"><option value="new">'+esc(T("sort_new"))+'</option><option value="low">'+esc(T("sort_low"))+'</option><option value="high">'+esc(T("sort_high"))+"</option></select></div></div>"+
+   '<div class="tb-r"><button class="toggle" data-a="sale" aria-pressed="'+S.saleOnly+'">'+esc(T("on_sale"))+'</button><label class="vh" for="sort">'+esc(T("sort_l"))+'</label><select class="sel" id="sort"><option value="rec">'+esc(T("sort_rec"))+'</option><option value="new">'+esc(T("sort_new"))+'</option><option value="low">'+esc(T("sort_low"))+'</option><option value="high">'+esc(T("sort_high"))+"</option></select></div></div>"+
    (ss.length?'<div class="chips subchips"><button class="chip" data-a="col" data-id="'+esc(c.id)+'" aria-pressed="'+(S.sub==="all")+'">'+esc(T("all_in",{c:L(c,"name")}))+"</button>"+ss.map(function(x){return '<button class="chip" data-a="col" data-id="'+esc(c.id)+'" data-sub="'+esc(x.id)+'" aria-pressed="'+(S.sub===x.id)+'">'+esc(L(x,"name"))+"</button>";}).join("")+"</div>":"")+
    '<div class="grid" id="grid"></div><div id="morewrap"></div>'+(DATA.products.some(function(p){return p.sample;})?'<p class="sample-note">'+esc(T("sample_note"))+"</p>":"")+"</div>";
   $("main").innerHTML=h;$("sort").value=S.sort;renderGrid();
@@ -1107,8 +1125,9 @@ function renderAdminTop(){
 function renderAdminBody(){var el=$("admbody");if(!el)return;if(S.syncing){el.innerHTML='<div class="panel"><p class="muted">Loading the latest store from the website…</p></div>';return;}if(S.atab==="categories")el.innerHTML=adminCats();else if(S.atab==="banners")el.innerHTML=adminBanners();else if(S.atab==="settings")el.innerHTML=adminSettings();else if(S.atab==="orders"){el.innerHTML=adminOrders();}else if(S.atab==="stats"){el.innerHTML=adminStats();}else{el.innerHTML=adminProducts();renderAdminTable();}}
 function sizeLabel(){var mb=new Blob([buildDoc()]).size/1048576;return(mb<0.1?"<0.1":mb.toFixed(1))+" MB of 16 MB";}
 function adminProducts(){
+  if(S.arr)return adminArrange();
   var ps=DATA.products,smp=ps.filter(function(p){return p.sample;}).length;
-  var h='<div class="adm-bar"><div class="stats"><span class="stat"><b>'+ps.length+'</b>products</span><span class="stat"><b>'+ps.filter(onSale).length+'</b>on sale</span><span class="stat"><b>'+ps.filter(function(p){return !p.stock;}).length+'</b>sold out</span><span class="stat"><b>'+sizeLabel()+'</b>used</span></div><button class="ab dark" data-a="p-new">'+ico("plus")+"Add product</button></div>";
+  var h='<div class="adm-bar"><div class="stats"><span class="stat"><b>'+ps.length+'</b>products</span><span class="stat"><b>'+ps.filter(onSale).length+'</b>on sale</span><span class="stat"><b>'+ps.filter(function(p){return !p.stock;}).length+'</b>sold out</span><span class="stat"><b>'+sizeLabel()+'</b>used</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ab" data-a="arr-open">'+ico("grid")+'Arrange order</button><button class="ab dark" data-a="p-new">'+ico("plus")+"Add product</button></div></div>";
   if(S.standalone&&!ghOn())h+='<div class="notice"><span>The dashboard isn\'t connected to the live website yet, so saving downloads files. Connect it once to publish directly.</span><button class="ab" data-a="atab" data-v="settings">Connect</button></div>';
   if(S.standalone&&GH.token&&GH.err)h+='<div class="notice"><span>'+esc(GH.err)+'</span><button class="ab" data-a="atab" data-v="settings">Fix connection</button></div>';
   if(!waNum())h+='<div class="notice"><span>Add the store\'s WhatsApp number so orders reach it.</span><button class="ab" data-a="atab" data-v="settings">Open settings</button></div>';
@@ -1226,7 +1245,7 @@ function saveEditor(){
   if(String(d.old==null?"":d.old).trim()!==""&&Number(d.old)>0&&!(old>price&&price>0)){e.err="The price before sale must be higher than the price.";renderEditor();return;}
   if(!d.cat){e.err="Create a category first, in the Categories tab.";renderEditor();return;}
   d.price=price;d.old=old>price?old:0;d.stock=!!d.stock;d.featured=!!d.featured;delete d.sample;
-  if(e.isNew)DATA.products.push(d);else for(var i=0;i<DATA.products.length;i++)if(DATA.products[i].id===d.id){DATA.products[i]=d;break;}
+  if(e.isNew){if(DATA.products.some(function(x){return typeof x.ord==="number";}))d.ord=minOrd()-1;DATA.products.push(d);}else for(var i=0;i<DATA.products.length;i++)if(DATA.products[i].id===d.id){DATA.products[i]=d;break;}
   S.edit=null;renderEditor();markDirty();renderAdminBody();toast(e.isNew?"Product added. Publish to put it live.":"Product saved. Publish to put it live.");
 }
 function swap(arr,i,j){if(j<0||j>=arr.length)return false;var t=arr[i];arr[i]=arr[j];arr[j]=t;return true;}
@@ -1320,6 +1339,39 @@ function parseSite(html){var m=/<script id="mc-data" type="application\/json">([
 function applyLatest(html){var x=parseSite(html);JSON.parse(x.data);ORIG=x.data;loadData();try{IMG=JSON.parse(x.imgs)||{};}catch(e){IMG={};}IMG_READY=true;}
 function ghLoadLatest(){var r=ghRepo();return gh("/repos/"+r+"/git/ref/heads/"+GH.branch).then(function(ref){var sha=ref.object.sha;return gh("/repos/"+r+"/contents/index.html?ref="+sha,{accept:"application/vnd.github.raw",raw:true}).then(function(html){applyLatest(html);GH.head=sha;GH.loaded=true;GH.err="";});});}
 
+
+/* ---------- product order ---------- */
+function minOrd(){var m=Infinity;DATA.products.forEach(function(p){if(typeof p.ord==="number"&&p.ord<m)m=p.ord;});return m===Infinity?0:m;}
+function initOrd(){if(DATA.products.every(function(p){return typeof p.ord==="number";}))return;var keep=S.sort;S.sort="rec";
+  var all=DATA.products.slice().sort(function(a,b){var ao=typeof a.ord==="number",bo=typeof b.ord==="number";if(ao&&bo)return a.ord-b.ord;if(ao!==bo)return ao?1:-1;return(b.created||0)-(a.created||0);});
+  all.forEach(function(p,i){p.ord=(i+1)*10;});S.sort=keep;}
+function arrList(){var c=S.arr.cat;return DATA.products.filter(function(p){return c==="all"||p.cat===c;}).sort(function(a,b){return(a.ord||0)-(b.ord||0);});}
+function arrMove(id,to){var L=arrList(),from=-1;L.forEach(function(p,i){if(p.id===id)from=i;});if(from<0)return false;to=Math.max(0,Math.min(L.length-1,to));if(to===from)return false;
+  var slots=L.map(function(p){return p.ord;});var it=L.splice(from,1)[0];L.splice(to,0,it);L.forEach(function(p,i){p.ord=slots[i];});
+  if(!S.arr.moved){S.arr.moved=true;}markDirty();return true;}
+function arrTile(p,i,n){var pr=priced(p)?money(p.price):T("on_request");
+  return '<div class="ar-tile'+(p.stock?"":" out")+(S.arr.drag===p.id?" dragging":"")+'" data-id="'+esc(p.id)+'"><span class="ar-grip" aria-hidden="true" title="Drag to move">⋮⋮</span><span class="ar-n">'+(i+1)+'</span>'+pimg(p)+
+    '<div class="ar-t"><b>'+esc(p.name_en||p.name_ar||"Untitled")+'</b><span>'+esc(pr)+(p.stock?"":" · Sold out (shows last)")+'</span></div>'+
+    '<div class="ar-b"><button class="sq" data-a="arr-first" data-id="'+esc(p.id)+'" aria-label="Move to first"'+(i===0?" disabled":"")+'>'+ico("up")+'</button><button class="sq" data-a="arr-mv" data-id="'+esc(p.id)+'" data-v="-1" aria-label="Move earlier"'+(i===0?" disabled":"")+'>'+ico("left","flip")+'</button><button class="sq" data-a="arr-mv" data-id="'+esc(p.id)+'" data-v="1" aria-label="Move later"'+(i===n-1?" disabled":"")+'>'+ico("right","flip")+"</button></div></div>";}
+function renderArrList(){var el=$("arlist");if(!el)return;var L=arrList();el.innerHTML=L.length?L.map(function(p,i){return arrTile(p,i,L.length);}).join(""):'<p class="muted">No products in this category yet.</p>';}
+function adminArrange(){var L=arrList();
+  var opts='<option value="all"'+(S.arr.cat==="all"?" selected":"")+'>All products ('+DATA.products.length+')</option>'+DATA.categories.map(function(c){var n=DATA.products.filter(function(p){return p.cat===c.id;}).length;return '<option value="'+esc(c.id)+'"'+(S.arr.cat===c.id?" selected":"")+">"+esc(c.name_en)+" ("+n+")</option>";}).join("");
+  return '<div class="panel ar-head"><div><h3>Arrange products</h3><p class="muted">This is the order customers see (sort: Recommended). Drag a product by its <b>⋮⋮</b> handle, or use the arrows. <b>↑</b> moves it to first place. Then tap <b>Publish to website</b>.</p></div>'+
+    '<div class="ar-ctl"><label class="vh" for="arcat">Category</label><select id="arcat" class="sel">'+opts+'</select><button class="ab dark" data-a="arr-done">Done</button></div></div>'+
+    '<div class="ar-list" id="arlist">'+(L.length?L.map(function(p,i){return arrTile(p,i,L.length);}).join(""):'<p class="muted">No products in this category yet.</p>')+"</div>"+
+    '<p class="muted" style="font-size:13px;margin-top:12px">Sold-out products always show after the ones in stock. New products start in first place.</p>';}
+/* drag (mouse: whole tile, touch: the ⋮⋮ handle) */
+(function(){var D=null;
+  function tileAt(x,y){var e=document.elementFromPoint(x,y);return e&&e.closest?e.closest(".ar-tile"):null;}
+  document.addEventListener("pointerdown",function(e){if(!S.arr||e.button>0)return;var t=e.target.closest&&e.target.closest(".ar-tile");if(!t||e.target.closest("button"))return;
+    if(e.pointerType!=="mouse"&&!e.target.closest(".ar-grip"))return;D={id:t.getAttribute("data-id"),x:e.clientX,y:e.clientY,on:false};if(e.pointerType!=="mouse"){e.preventDefault();try{if(e.target.hasPointerCapture&&e.target.hasPointerCapture(e.pointerId))e.target.releasePointerCapture(e.pointerId);}catch(x){}}},{passive:false});
+  document.addEventListener("pointermove",function(e){if(!D)return;if(!D.on){if(Math.abs(e.clientX-D.x)+Math.abs(e.clientY-D.y)<6)return;D.on=true;S.arr.drag=D.id;renderArrList();}
+    e.preventDefault();D.cx=e.clientX;D.cy=e.clientY;over();if(!D.tm)D.tm=setInterval(edge,30);},{passive:false});
+  function over(){if(!D)return;var t=tileAt(D.cx,D.cy);if(t&&t.getAttribute("data-id")!==D.id){var L=arrList(),to=-1;L.forEach(function(p,i){if(p.id===t.getAttribute("data-id"))to=i;});if(to>-1&&arrMove(D.id,to))renderArrList();}}
+  function edge(){if(!D||!D.on)return;var ad=$("adm");if(!ad)return;var dy=D.cy<110?-(110-D.cy)/3:D.cy>innerHeight-110?(D.cy-innerHeight+110)/3:0;if(dy){var b4=ad.scrollTop;ad.scrollTop+=Math.max(-32,Math.min(32,dy));if(ad.scrollTop!==b4)over();}}
+  function end(){if(!D)return;clearInterval(D.tm);var was=D.on;D=null;if(S.arr){S.arr.drag=null;renderArrList();if(was)renderAdminTop();}}
+  document.addEventListener("pointerup",end);document.addEventListener("pointercancel",end);
+})();
 /* ---------- visitors ---------- */
 function bDay(d){try{return new Date(d).toLocaleDateString("en-CA",{timeZone:"Asia/Beirut"});}catch(e){return "";}}
 function dayAdd(day,n){var d=new Date(day+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
@@ -1562,6 +1614,10 @@ document.addEventListener("click",function(e){
   case "atab":S.atab=v;S.confirm=null;renderAdminTop();renderAdminBody();if(v==="stats")loadStats();var ad=$("adm");if(ad)ad.scrollTop=0;break;
   case "publish":publish();break;
   case "lock-now":lockNow();break;
+  case "arr-open":initOrd();S.arr={cat:"all"};renderAdminBody();var ad0=$("adm");if(ad0)ad0.scrollTop=0;break;
+  case "arr-done":S.arr=null;renderAdminTop();renderAdminBody();if(S.dirty)toast("Order changed. Tap Publish to website to put it live.");break;
+  case "arr-mv":if(arrMove(id,(function(){var L=arrList(),k=0;L.forEach(function(p,i){if(p.id===id)k=i;});return k+parseInt(v,10);})()))renderArrList();renderAdminTop();break;
+  case "arr-first":if(arrMove(id,0))renderArrList();renderAdminTop();break;
   case "st-refresh":loadStats();break;
   case "st-per":S.stPer=v;S.stOff=0;renderAdminBody();break;
   case "st-step":S.stOff=Math.min(0,(S.stOff||0)+parseInt(v,10));renderAdminBody();break;
@@ -1628,6 +1684,7 @@ document.addEventListener("input",function(e){
 });
 document.addEventListener("change",function(e){
   var el=e.target;
+  if(el.id==="arcat"&&S.arr){S.arr.cat=el.value;renderAdminBody();return;}
   if(el.id==="sort"){S.sort=el.value;S.limit=24;renderGrid();return;}
   if(el.id==="acat"){S.acat=el.value;renderAdminTable();return;}
   if(el.hasAttribute("data-ost")){var oid=el.getAttribute("data-ost"),st=el.value,o=(S.orders||[]).filter(function(x){return x.id===oid;})[0];if(!o)return;var prev=o.status;o.status=st;renderAdminTop();renderAdminBody();
@@ -1679,4 +1736,5 @@ function checkEdit(){
 })();
 </script>
 <script id="mc-img" type="application/json">{}</script>
-<script>window.MC_IMG&&window.MC_IMG()</script></body></html>
+<script>window.MC_IMG&&window.MC_IMG()</script>
+</body></html>
