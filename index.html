@@ -777,7 +777,6 @@ function logoHtml(){return DATA.settings.logo?imgTag(DATA.settings.logo,brandNam
 function matches(p,q){var c=catById(p.cat),so=subObj(p.cat,p.sub);return[so&&so.name_en,so&&so.name_ar,p.name_en,p.name_ar,p.desc_en,p.desc_ar,p.colors_en,p.colors_ar,c&&c.name_en,c&&c.name_ar].join(" ").toLowerCase().indexOf(q)>-1;}
 function sorted(arr){
   return arr.slice().sort(function(a,b){
-    if(!!a.stock!==!!b.stock)return a.stock?-1:1;
     if(S.sort==="rec"){var ao=typeof a.ord==="number",bo=typeof b.ord==="number";if(ao&&bo&&a.ord!==b.ord)return a.ord-b.ord;if(ao!==bo)return ao?-1:1;return(b.created||0)-(a.created||0);}
     if(S.sort!=="new"&&priced(a)!==priced(b))return priced(a)?-1:1;
     if(S.sort==="low")return a.price-b.price;if(S.sort==="high")return b.price-a.price;
@@ -971,7 +970,7 @@ function renderModal(){
   if(sizes.length)h+='<div><div class="opt-l">'+esc(T("size"))+'</div><div class="ochips">'+sizes.map(function(s){return '<button class="ochip" data-a="size" data-v="'+esc(s)+'" aria-pressed="'+(sel.size===s)+'">'+esc(s)+"</button>";}).join("")+"</div></div>";
   if(cols.length)h+='<div><div class="opt-l">'+esc(T("color"))+": "+esc(cols[sel.ci]||"")+'</div><div class="ochips">'+cols.map(function(s,i){return '<button class="ochip" data-a="color" data-v="'+i+'" aria-pressed="'+(sel.ci===i)+'">'+esc(s)+"</button>";}).join("")+"</div></div>";
   if(p.stock)h+='<div><div class="opt-l">'+esc(T("qty"))+'</div><div class="stepper"><button data-a="qty" data-v="-1" aria-label="−">'+ico("minus")+"</button><b>"+sel.qty+'</b><button data-a="qty" data-v="1" aria-label="+">'+ico("plus")+"</button></div></div>";
-  h+=(sel.err?'<p class="err">'+esc(T("pick_size"))+"</p>":"")+'<div class="pm-cta"><button class="btn-f" data-a="addcart"'+(p.stock?"":" disabled")+">"+esc(T("add"))+'</button><button class="heart-b" data-a="like" data-id="'+esc(p.id)+'" aria-pressed="'+liked+'" aria-label="'+esc(T("wish"))+'">'+ico("heart")+"</button></div>";
+  h+=(sel.err?'<p class="err">'+esc(T("pick_size"))+"</p>":"")+'<div class="pm-cta"><button class="btn-f" data-a="addcart"'+(p.stock?"":" disabled")+">"+esc(p.stock?T("add"):T("sold_out"))+'</button><button class="heart-b" data-a="like" data-id="'+esc(p.id)+'" aria-pressed="'+liked+'" aria-label="'+esc(T("wish"))+'">'+ico("heart")+"</button></div>";
   r.innerHTML=h+"</div></div></div>";
 }
 function galHtml(p){var a=p.imgs||[];if(!a.length)return '<div class="gal"><div class="gal-track"><div class="ph">'+ico("image")+"</div></div></div>";
@@ -1354,7 +1353,7 @@ function arrMove(id,to){var L=arrList(),from=-1;L.forEach(function(p,i){if(p.id=
   if(!S.arr.moved){S.arr.moved=true;}markDirty();return true;}
 function arrTile(p,i,n){var pr=priced(p)?money(p.price):T("on_request");
   return '<div class="ar-tile'+(p.stock?"":" out")+(S.arr.drag===p.id?" dragging":"")+'" data-id="'+esc(p.id)+'"><span class="ar-grip" aria-hidden="true" title="Drag to move">⋮⋮</span><span class="ar-n">'+(i+1)+'</span>'+pimg(p)+
-    '<div class="ar-t"><b>'+esc(p.name_en||p.name_ar||"Untitled")+'</b><span>'+esc(pr)+(p.stock?"":" · Sold out (shows last)")+'</span></div>'+
+    '<div class="ar-t"><b>'+esc(p.name_en||p.name_ar||"Untitled")+'</b><span>'+esc(pr)+(p.stock?"":" · Sold out")+'</span></div>'+
     '<div class="ar-b"><button class="sq" data-a="arr-first" data-id="'+esc(p.id)+'" aria-label="Move to first"'+(i===0?" disabled":"")+'>'+ico("up")+'</button><button class="sq" data-a="arr-mv" data-id="'+esc(p.id)+'" data-v="-1" aria-label="Move earlier"'+(i===0?" disabled":"")+'>'+ico("left","flip")+'</button><button class="sq" data-a="arr-mv" data-id="'+esc(p.id)+'" data-v="1" aria-label="Move later"'+(i===n-1?" disabled":"")+'>'+ico("right","flip")+"</button></div></div>";}
 function renderArrList(){var el=$("arlist");if(!el)return;var L=arrList();el.innerHTML=L.length?L.map(function(p,i){return arrTile(p,i,L.length);}).join(""):'<p class="muted">No products in this category yet.</p>';}
 function adminArrange(){var L=arrList();
@@ -1362,7 +1361,7 @@ function adminArrange(){var L=arrList();
   return '<div class="panel ar-head"><div><h3>Arrange products</h3><p class="muted">This is the order customers see (sort: Recommended). Drag a product by its <b>⋮⋮</b> handle, or use the arrows. <b>↑</b> moves it to first place. Then tap <b>Publish to website</b>.</p></div>'+
     '<div class="ar-ctl"><label class="vh" for="arcat">Category</label><select id="arcat" class="sel">'+opts+'</select><button class="ab dark" data-a="arr-done">Done</button></div></div>'+
     '<div class="ar-list" id="arlist">'+(L.length?L.map(function(p,i){return arrTile(p,i,L.length);}).join(""):'<p class="muted">No products in this category yet.</p>')+"</div>"+
-    '<p class="muted" style="font-size:13px;margin-top:12px">Sold-out products always show after the ones in stock. New products start in first place.</p>';}
+    '<p class="muted" style="font-size:13px;margin-top:12px">Sold-out products stay in their place with a "Sold out" label. New products start in first place.</p>';}
 /* drag (mouse: whole tile, touch: the ⋮⋮ handle) */
 (function(){var D=null;
   function tileAt(x,y){var e=document.elementFromPoint(x,y);return e&&e.closest?e.closest(".ar-tile"):null;}
@@ -1739,4 +1738,5 @@ function checkEdit(){
 })();
 </script>
 <script id="mc-img" type="application/json">{}</script>
-<script>window.MC_IMG&&window.MC_IMG()</script></body></html>
+<script>window.MC_IMG&&window.MC_IMG()</script>
+</body></html>
