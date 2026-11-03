@@ -3,7 +3,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
-<style id="mc-css">.ar-head{display:flex;flex-wrap:wrap;gap:12px 20px;justify-content:space-between;align-items:flex-start}
+<style id="mc-css">.lk-list{display:grid;gap:6px}
+.lk-row{display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,2fr) auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+.lk-row:first-child{border-top:0}
+.lk-l{font-weight:500;font-size:14px}
+.lk-u{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--soft);padding:4px 8px;border-radius:4px}
+@media (max-width:600px){.lk-row{grid-template-columns:1fr auto}.lk-u{grid-column:1/-1;grid-row:2}}
+.ar-head{display:flex;flex-wrap:wrap;gap:12px 20px;justify-content:space-between;align-items:flex-start}
 .ar-head p{margin:4px 0 0;max-width:640px;font-size:14px}
 .ar-ctl{display:flex;gap:8px;align-items:center}
 .ar-ctl .sel{height:40px;min-width:200px}
@@ -747,6 +753,7 @@ function brandName(){return DATA.settings.name_en||"MANCAVE";}
 function brandShort(){return String(brandName()).replace(/\.lb$/i,"").toUpperCase();}
 
 var PATHS={
+link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
 bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
 lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
 bksp:'<path d="M21 5H8l-6 7 6 7h13z"/><path d="M16 9l-5 6M11 9l5 6"/>',
@@ -959,7 +966,7 @@ function renderBbar(){
 }
 
 /* ---------- product modal ---------- */
-function openProduct(id){var p=prodById(id);if(!p)return;var rep=!!S.view;if(!S.view&&!S.drawer)savePos();S.search=false;renderSearch();S.drawer=null;renderDrawer();S.view=id;S.sel={size:null,ci:colorsOf(p).length?0:-1,qty:1,err:false};renderModal();lock();pushSt(rep);}
+function openProduct(id){var p=prodById(id);if(!p)return;px("ViewContent",{content_ids:[p.id],content_type:"product",content_name:p.name_en||p.name_ar,value:priced(p)?Number(p.price):0,currency:pxCur()});var rep=!!S.view;if(!S.view&&!S.drawer)savePos();S.search=false;renderSearch();S.drawer=null;renderDrawer();S.view=id;S.sel={size:null,ci:colorsOf(p).length?0:-1,qty:1,err:false};renderModal();lock();pushSt(rep);}
 function renderModal(){
   var r=$("r-modal"),p=S.view&&prodById(S.view);
   if(!p){r.innerHTML="";S.view=null;return;}
@@ -981,7 +988,7 @@ function galGo(i,smooth){var t=$("galt");if(!t)return;var n=t.children.length;i=
 function galMark(i){var c=$("galc"),t=$("galt");if(c&&t)c.textContent=(i+1)+" / "+t.children.length;document.querySelectorAll(".gal-thumbs button").forEach(function(b,k){b.setAttribute("aria-current",k===i);});}
 document.addEventListener("scroll",function(e){if(e.target&&e.target.id==="galt")galMark(galIdx());},true);
 function oneOrder(p){var s=S.sel||{},a=[L(p,"name")];if(s.size)a.push(T("size")+": "+s.size);var c=colorsOf(p);if(s.ci>-1&&c[s.ci])a.push(T("color")+": "+c[s.ci]);return T("o_hi")+"\n• "+a.join(" · ")+" × "+(s.qty||1)+" = "+(priced(p)?money(p.price*(s.qty||1)):T("on_request"));}
-function addToCart(p,size,ci,qty){for(var i=0;i<S.cart.length;i++){var l=S.cart[i];if(l.id===p.id&&l.size===size&&l.ci===ci){l.qty+=qty;saveCart();return;}}S.cart.push({id:p.id,size:size,ci:ci,qty:qty});saveCart();}
+function addToCart(p,size,ci,qty){px("AddToCart",{content_ids:[p.id],contents:[{id:p.id,quantity:qty}],content_type:"product",content_name:p.name_en||p.name_ar,value:priced(p)?Number(p.price)*qty:0,currency:pxCur()});for(var i=0;i<S.cart.length;i++){var l=S.cart[i];if(l.id===p.id&&l.size===size&&l.ci===ci){l.qty+=qty;saveCart();return;}}S.cart.push({id:p.id,size:size,ci:ci,qty:qty});saveCart();}
 function saveCart(){S.cart=S.cart.filter(function(l){return prodById(l.id)&&l.qty>0;});lsSet("mc_cart",S.cart);counts();if(S.page==="checkout"&&!S.placing&&$("cof"))renderCheckout();}
 
 /* ---------- drawers ---------- */
@@ -1092,6 +1099,7 @@ function placeOrder(){
     fetch(ordUrl(),{method:"POST",body:JSON.stringify(payload),signal:ctl?ctl.signal:undefined}).then(function(r){return r.json();}).then(function(j){
       clearTimeout(tm);if(!j||!j.ok){var e=new Error(j&&j.error||"failed");e.hard=!!(j&&hard[j.error]);throw e;}
       S.lastOrder={id:j.id,name:payload.name,phone:payload.phone,email:payload.email,items:payload.items,total:payload.total,req:t.req,tbc:t.tbc,del:t.del,sub:t.sub,wa:waNum()?waLink(orderText(j.id)):""};
+      px("Purchase",{content_ids:payload.items.map(function(x){return x.id;}),contents:payload.items.map(function(x){return{id:x.id,quantity:x.qty};}),num_items:payload.items.reduce(function(a,x){return a+x.qty;},0),content_type:"product",value:payload.total,currency:pxCur()},{eventID:String(j.id)});
       ssSet("mc_last",S.lastOrder);S.cart=[];saveCart();S.placing=false;S.coErrs={};
       S.page="done";renderMain();window.scrollTo({top:0});pushSt(true);
       if(S.lastOrder.wa&&isTouch()){var once=S.lastOrder;setTimeout(function(){if(S.page==="done"&&!once.waGone){once.waGone=true;ssSet("mc_last",once);location.href=once.wa;}},1200);}
@@ -1142,7 +1150,7 @@ function renderAdminTable(){
   var rows=DATA.products.filter(function(p){return(S.acat==="all"||p.cat===S.acat)&&(!q||(p.name_en+" "+p.name_ar).toLowerCase().indexOf(q)>-1);}).sort(function(a,b){return(b.created||0)-(a.created||0);});
   if(!rows.length){el.innerHTML='<p class="muted" style="padding:24px">'+(DATA.products.length?"No products match this search.":"No products yet. Click Add product to create the first one.")+"</p>";return;}
   el.innerHTML="<table><thead><tr><th></th><th>Product</th><th>Category</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>"+rows.map(function(p){
-    var c=catById(p.cat),acts=S.confirm==="del:"+p.id?'<button class="danger-fill" data-a="p-del-yes" data-id="'+esc(p.id)+'">Delete it</button><button data-a="confirm-no">Cancel</button>':'<button data-a="p-edit" data-id="'+esc(p.id)+'">Edit</button><button data-a="p-dup" data-id="'+esc(p.id)+'">Duplicate</button><button class="danger" data-a="p-del" data-id="'+esc(p.id)+'">Delete</button>';
+    var c=catById(p.cat),acts=S.confirm==="del:"+p.id?'<button class="danger-fill" data-a="p-del-yes" data-id="'+esc(p.id)+'">Delete it</button><button data-a="confirm-no">Cancel</button>':'<button data-a="p-edit" data-id="'+esc(p.id)+'">Edit</button><button data-a="p-link" data-id="'+esc(p.id)+'">Copy link</button><button data-a="p-dup" data-id="'+esc(p.id)+'">Duplicate</button><button class="danger" data-a="p-del" data-id="'+esc(p.id)+'">Delete</button>';
     return '<tr><td class="th">'+pimg(p)+"</td><td><b>"+esc(p.name_en||"(no English name)")+"</b>"+((p.imgs||[]).length>1?' <span class="muted" style="font-size:12px">· '+p.imgs.length+" photos</span>":"")+(p.name_ar?'<div class="ar-sub" dir="rtl">'+esc(p.name_ar)+"</div>":"")+"</td><td>"+esc(c?c.name_en:"Uncategorized")+(subObj(p.cat,p.sub)?'<div class="muted" style="font-size:13px">› '+esc(subObj(p.cat,p.sub).name_en)+"</div>":"")+'</td><td style="font-variant-numeric:tabular-nums"><b>'+(priced(p)?money(p.price):'<span class="muted" style="font-weight:500">On request</span>')+"</b>"+(onSale(p)?' <s class="muted">'+money(p.old)+"</s>":"")+"</td>"+
      '<td><button class="st '+(p.stock?"on":"off")+'" data-a="p-stock" data-id="'+esc(p.id)+'" title="Click to switch">'+(p.stock?"In stock":"Sold out")+"</button>"+(onSale(p)?'<span class="st sale">−'+pct(p)+"%</span>":"")+(p.featured?'<span class="st feat">Featured</span>':"")+(p.sample?'<span class="st smp">Example price</span>':"")+'</td><td><div class="acts">'+acts+"</div></td></tr>";}).join("")+"</tbody></table>";
 }
@@ -1162,7 +1170,7 @@ function adminCats(){
     var n=DATA.products.filter(function(p){return p.cat===c.id;}).length;
     h+='<div class="crow-a">'+(c.img?imgTag(c.img,"",false):'<div class="ph">'+ico("image")+"</div>")+
      '<input id="c-en-'+i+'" data-c="name_en" data-i="'+i+'" value="'+esc(c.name_en)+'" aria-label="English name" placeholder="English name"><input id="c-ar-'+i+'" data-c="name_ar" data-i="'+i+'" value="'+esc(c.name_ar)+'" dir="rtl" aria-label="Arabic name" placeholder="الاسم بالعربي">'+
-     '<div class="ctools"><label class="sq" title="Change photo" aria-label="Change photo">'+ico("image")+'<input type="file" accept="image/*" data-cimg="'+i+'"></label><button class="sq" data-a="c-up" data-i="'+i+'" aria-label="Move up"'+(i===0?" disabled":"")+">"+ico("up")+'</button><button class="sq" data-a="c-down" data-i="'+i+'" aria-label="Move down"'+(i===DATA.categories.length-1?" disabled":"")+">"+ico("down")+"</button>"+
+     '<div class="ctools"><button class="sq" data-a="c-link" data-i="'+i+'" title="Copy link for ads" aria-label="Copy link">'+ico("link")+'</button><label class="sq" title="Change photo" aria-label="Change photo">'+ico("image")+'<input type="file" accept="image/*" data-cimg="'+i+'"></label><button class="sq" data-a="c-up" data-i="'+i+'" aria-label="Move up"'+(i===0?" disabled":"")+">"+ico("up")+'</button><button class="sq" data-a="c-down" data-i="'+i+'" aria-label="Move down"'+(i===DATA.categories.length-1?" disabled":"")+">"+ico("down")+"</button>"+
      (S.confirm==="cdel:"+i?'<span class="acts"><button class="danger-fill" data-a="c-del-yes" data-i="'+i+'">Delete</button><button data-a="confirm-no">Cancel</button></span>':(n?'<span class="muted" style="font-size:12px;padding-inline-start:6px">'+n+" product"+(n>1?"s":"")+"</span>":'<span class="acts"><button class="danger" data-a="c-del" data-i="'+i+'">Delete</button></span>'))+"</div></div>"+
      '<div class="sub-a"><div class="field"><label for="c-sz-'+i+'">Sizes for this category</label><input id="c-sz-'+i+'" data-c="sizes" data-i="'+i+'" value="'+esc(c.sizes||"")+'" placeholder="M, L, XL, XXL"><p class="help">Filled in automatically when you add a product to this category.</p></div><b style="font-size:13px">Subcategories</b>'+
      (c.subs||[]).map(function(x,j){var m=DATA.products.filter(function(p){return p.cat===c.id&&p.sub===x.id;}).length;return '<div class="sub-r"><input id="s-en-'+i+'-'+j+'" data-sc="name_en" data-i="'+i+'" data-j="'+j+'" value="'+esc(x.name_en)+'" aria-label="Subcategory English name" placeholder="English name"><input id="s-ar-'+i+'-'+j+'" data-sc="name_ar" data-i="'+i+'" data-j="'+j+'" value="'+esc(x.name_ar)+'" dir="rtl" aria-label="Subcategory Arabic name" placeholder="الاسم بالعربي">'+(m?'<span class="muted" style="font-size:12px">'+m+" product"+(m>1?"s":"")+"</span>":'<span class="acts"><button class="danger" data-a="s-del" data-i="'+i+'" data-v="'+j+'">Delete</button></span>')+"</div>";}).join("")+
@@ -1179,7 +1187,7 @@ function sf(k,label,o){
 function pinPanel(){if(!S.standalone)return "";var on=!!pinSet();
   return '<div class="panel"><h3>Dashboard PIN</h3><p class="muted" style="margin-bottom:14px">'+(on?"The dashboard asks for a 4-digit PIN when it opens.":"No PIN yet. Anyone who opens this page sees the dashboard (they still can't publish or see orders without the keys).")+'</p><div class="pin-row"><input id="pin1" type="password" inputmode="numeric" maxlength="4" placeholder="New PIN" autocomplete="new-password"><input id="pin2" type="password" inputmode="numeric" maxlength="4" placeholder="Repeat" autocomplete="new-password"><button class="ab dark" data-a="pin-set">'+(on?"Change PIN":"Set PIN")+'</button>'+(on?'<button class="ab" data-a="pin-off">Remove PIN</button>':"")+'</div><p class="help">After changing it, tap Publish to website so it applies on every device.</p></div>';}
 function adminSettings(){
-  return pinPanel()+ghPanel()+ordersPanel()+'<div class="panel"><h3>Logo</h3><div class="logo-set">'+logoHtml()+'<label class="ab file-btn">'+ico("image")+'Upload logo<input type="file" id="s-logo" accept="image/*"></label><p class="help">Square image works best. It shows in a circle.</p></div></div>'+
+  return pinPanel()+ghPanel()+ordersPanel()+adsPanel()+'<div class="panel"><h3>Logo</h3><div class="logo-set">'+logoHtml()+'<label class="ab file-btn">'+ico("image")+'Upload logo<input type="file" id="s-logo" accept="image/*"></label><p class="help">Square image works best. It shows in a circle.</p></div></div>'+
    '<div class="panel"><h3>Ordering &amp; delivery</h3><div class="fgrid">'+sf("whatsapp","WhatsApp number for orders",{ph:"96171300884",help:"Country code + number, digits only. After placing an order, customers send it to this WhatsApp. Also shown at the bottom of the website."})+sf("currency","Currency symbol",{ph:"$"})+
    sf("delivery_fee","Delivery fee",{num:true,help:"Set 0 to show “Confirmed when we call” instead of a fee."})+sf("free_over","Free delivery for orders over",{num:true,help:"Set 0 for no free-delivery offer."})+"</div></div>"+
    '<div class="panel"><h3>Top bar &amp; search</h3><div class="fgrid">'+sf("announce_en","Scrolling announcement (English)")+sf("announce_ar","Scrolling announcement (Arabic)",{rtl:true})+
@@ -1342,6 +1350,56 @@ function applyLatest(html){var x=parseSite(html);JSON.parse(x.data);ORIG=x.data;
 function ghLoadLatest(){var r=ghRepo();return gh("/repos/"+r+"/git/ref/heads/"+GH.branch).then(function(ref){var sha=ref.object.sha;return gh("/repos/"+r+"/contents/index.html?ref="+sha,{accept:"application/vnd.github.raw",raw:true}).then(function(html){applyLatest(html);GH.head=sha;GH.loaded=true;GH.err="";});});}
 
 
+
+/* ---------- links for ads (mancave.fit/?p=… ?c=… ?offers=1) ---------- */
+function slugify(t){return String(t||"").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60);}
+function catSlug(c){return slugify(c.name_en)||c.id;}
+function subSlug(x){return slugify(x.name_en)||x.id;}
+function catFrom(v){v=String(v||"").toLowerCase();return DATA.categories.filter(function(c){return c.id.toLowerCase()===v||catSlug(c)===v;})[0]||null;}
+function subFrom(c,v){v=String(v||"").toLowerCase();return (c.subs||[]).filter(function(x){return String(x.id).toLowerCase()===v||subSlug(x)===v;})[0]||null;}
+function urlFor(st){
+  if(st.v)return "?p="+encodeURIComponent(st.v);
+  if(st.p==="col"){var q=[],c=st.c&&st.c!=="all"?catById(st.c):null;
+    if(c){q.push("c="+catSlug(c));if(st.s&&st.s!=="all"){var so=subObj(st.c,st.s);if(so)q.push("s="+subSlug(so));}}
+    if(st.o)q.push("offers=1");else if(!c)q.push("c=all");
+    return "?"+q.join("&");}
+  return location.pathname;}
+function siteBase(){return (S.standalone&&/^https?:$/.test(location.protocol))?location.origin+"/":"https://mancave.fit/";}
+function linkProduct(p){return siteBase()+"?p="+encodeURIComponent(p.id);}
+function linkCat(c,sub){return siteBase()+"?c="+catSlug(c)+(sub?"&s="+subSlug(sub):"");}
+function routeFromUrl(){try{
+  if(S.standalone||window.__MC_ADMIN===true||location.hash==="#admin")return;var h=history.state;if(h&&h.mc)return;
+  var q=new URLSearchParams(location.search),pid=q.get("p"),cv=q.get("c"),off=q.get("offers");
+  if(pid){var p=prodById(pid)||DATA.products.filter(function(x){return slugify(x.name_en)===String(pid).toLowerCase();})[0];
+    if(p){S.page="col";S.cat=p.cat||"all";S.sub="all";S.openAfter=p.id;return;}}
+  if(cv||off){var c=cv&&cv!=="all"?catFrom(cv):null;S.page="col";S.cat=c?c.id:"all";S.sub="all";var sv=q.get("s");if(c&&sv){var so=subFrom(c,sv);if(so)S.sub=so.id;}S.saleOnly=!!off;}
+}catch(e){}}
+function copyText(t){var done=function(){toast("Link copied: "+t);};
+  try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(done,function(){fallback();});return;}}catch(e){}
+  fallback();function fallback(){var a=document.createElement("textarea");a.value=t;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();try{document.execCommand("copy");done();}catch(e){toast(t);}a.remove();}}
+function adsPanel(){
+  var row=function(label,url){return '<div class="lk-row"><span class="lk-l">'+esc(label)+'</span><code class="lk-u">'+esc(url.replace(/^https?:\/\//,""))+'</code><button class="ab" data-a="copy-url" data-v="'+esc(url)+'">Copy link</button></div>';};
+  var h='<div class="panel"><h3>Ads: Meta (Facebook &amp; Instagram)</h3><p class="muted" style="margin-bottom:14px">Paste your Meta Pixel ID, then tap Publish to website. The site then tells Meta about visits, product views, add to cart, checkout and orders (with the order value), so Ads Manager can track sales and find buyers.</p><div class="fgrid">'+
+    sf("meta_pixel","Meta Pixel ID",{ph:"e.g. 1234567890123456",help:"Events Manager → Data sources → your pixel → the ID number (digits only). Your own devices with the orders passcode aren't tracked."})+"</div>"+
+    (String(DATA.settings.meta_pixel||"").trim()&&!/^\d{8,20}$/.test(String(DATA.settings.meta_pixel).replace(/\s/g,""))?'<p class="err" style="margin-top:8px">That doesn\'t look like a Pixel ID. It should be only digits.</p>':"")+"</div>";
+  h+='<div class="panel"><h3>Links for ads</h3><p class="muted" style="margin-bottom:12px">Use these as the website link in an ad, story or WhatsApp message. They open straight on that page. Each product has its own link too: Products tab → <b>Copy link</b>.</p><div class="lk-list">'+
+    row("Home page",siteBase())+row("All products",siteBase()+"?c=all")+row("Offers (all items on sale)",siteBase()+"?offers=1");
+  DATA.categories.forEach(function(c){if(!DATA.products.some(function(p){return p.cat===c.id;}))return;h+=row(c.name_en,linkCat(c));(c.subs||[]).forEach(function(x){if(DATA.products.some(function(p){return p.cat===c.id&&p.sub===x.id;}))h+=row(c.name_en+" › "+x.name_en,linkCat(c,x));});});
+  return h+"</div></div>";
+}
+/* ---------- Meta Pixel ---------- */
+var PX=null;
+function pxCur(){var c=String(DATA.settings.currency||"$").trim();return (c==="$"||/usd/i.test(c))?"USD":/lbp|ل\.ل/i.test(c)?"LBP":(/^[A-Za-z]{3}$/.test(c)?c.toUpperCase():"USD");}
+function initPixel(){try{
+  var id=String(DATA.settings.meta_pixel||"").replace(/\s/g,"");if(!/^\d{8,20}$/.test(id))return;
+  if(S.standalone||window.__MC_ADMIN===true||location.hash==="#admin")return;if(window.claude&&typeof window.claude.use==="function")return;
+  if(navigator.webdriver&&!window.__MC_TRACK)return;if(ordKey())return;
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+  window.fbq("init",id);window.fbq("track","PageView");PX=id;
+}catch(e){}}
+function px(ev,data,opt){try{if(PX&&window.fbq)window.fbq("track",ev,data||{},opt||{});}catch(e){}}
+function pxCart(){var ids=[],ct=[],n=0;S.cart.forEach(function(l){ids.push(l.id);ct.push({id:l.id,quantity:l.qty});n+=l.qty;});return{content_ids:ids,contents:ct,num_items:n,content_type:"product",value:totals().total,currency:pxCur()};}
+document.addEventListener("click",function(e){var f=e.target.closest&&e.target.closest("#wafab");if(f)px("Contact");},true);
 /* ---------- product order ---------- */
 function minOrd(){var m=Infinity;DATA.products.forEach(function(p){if(typeof p.ord==="number"&&p.ord<m)m=p.ord;});return m===Infinity?0:m;}
 function initOrd(){if(DATA.products.every(function(p){return typeof p.ord==="number";}))return;var keep=S.sort;S.sort="rec";
@@ -1555,13 +1613,14 @@ function publish(){
 function openAdmin(tab){if(!S.canEdit)return;S.admin=true;if(tab)S.atab=tab;else if(ordUrl()&&ordKey()&&!S.adminOpened)S.atab="orders";S.adminOpened=true;setTimeout(function(){loadOrders(!!S.orders);startOrdPoll();},0);S.confirm=null;S.view=null;S.drawer=null;S.search=false;renderSearch();renderModal();renderDrawer();renderAdmin();lock();}
 
 /* =================== EVENTS =================== */
-function snap(){return{mc:1,p:S.page,c:S.cat,s:S.sub,q:S.q,v:S.view,d:S.drawer,l:S.limit,y:window.scrollY||0};}
+function snap(){return{mc:1,p:S.page,c:S.cat,s:S.sub,q:S.q,v:S.view,d:S.drawer,l:S.limit,o:!!S.saleOnly,y:window.scrollY||0};}
 function savePos(){try{var st=history.state&&history.state.mc?history.state:snap();st.y=window.scrollY||0;st.l=S.limit;history.replaceState(st,"");}catch(e){}}
-function pushSt(replace){try{if(replace)history.replaceState(snap(),"");else history.pushState(snap(),"");}catch(e){}}
+function pushSt(replace){try{var st=snap(),u=S.standalone?undefined:urlFor(st);if(replace)history.replaceState(st,"",u);else history.pushState(st,"",u);}catch(e){}}
 function closeOverlay(){var st=null;try{st=history.state;}catch(e){}if(st&&st.mc&&(st.v||st.d)){try{history.back();return;}catch(e){}}S.view=null;S.drawer=null;renderModal();renderDrawer();lock();}
 function applySt(st){
   if(!st||!st.mc)st={p:"home",c:"all",s:"all",q:"",v:null,d:null,l:24,y:0};
   var pg=st.p!==S.page||st.c!==S.cat||st.s!==S.sub||(st.q||"")!==S.q;
+  if(!!st.o!==!!S.saleOnly){S.saleOnly=!!st.o;pg=true;}
   S.page=st.p;S.cat=st.c||"all";S.sub=st.s||"all";S.q=st.q||"";
   if(st.v!==S.view){var pv=st.v&&prodById(st.v);S.view=pv?st.v:null;if(pv)S.sel={size:null,ci:colorsOf(pv).length?0:-1,qty:1,err:false};}
   S.drawer=st.d||null;S.search=false;renderSearch();
@@ -1587,7 +1646,7 @@ document.addEventListener("click",function(e){
   case "seeall":S.saleOnly=false;goCol("all");break;
   case "col":S.q="";goCol(id,b.getAttribute("data-sub"));break;
   case "clear":S.q="";S.saleOnly=false;goCol("all");break;
-  case "sale":S.saleOnly=!S.saleOnly;S.limit=24;b.setAttribute("aria-pressed",S.saleOnly);renderGrid();break;
+  case "sale":S.saleOnly=!S.saleOnly;S.limit=24;b.setAttribute("aria-pressed",S.saleOnly);renderGrid();pushSt(true);break;
   case "slide":setSlide(S.slide+parseInt(v,10));startAuto();break;
   case "dot":setSlide(parseInt(v,10));startAuto();break;
   case "rscroll":var row=$(id);if(row){var dir=document.documentElement.dir==="rtl"?-1:1;row.scrollBy({left:dir*parseInt(v,10)*row.clientWidth*0.9,behavior:"smooth"});}break;
@@ -1608,7 +1667,7 @@ document.addEventListener("click",function(e){
   case "more":S.limit+=24;renderGrid();pushSt(true);break;
   case "lq":if(S.cart[i]){S.cart[i].qty=Math.max(0,Math.min(99,S.cart[i].qty+parseInt(v,10)));saveCart();renderDrawer();}break;
   case "rm":S.cart.splice(i,1);saveCart();renderDrawer();break;
-  case "checkout":S.coMsg="";S.coWa=false;S.coErrs={};if(S.page==="checkout"&&S.drawer){closeOverlay();renderMain();window.scrollTo({top:0});}else goPage("checkout");break;
+  case "checkout":S.coMsg="";S.coWa=false;S.coErrs={};if(S.cart.length)px("InitiateCheckout",pxCart());if(S.page==="checkout"&&S.drawer){closeOverlay();renderMain();window.scrollTo({top:0});}else goPage("checkout");break;
   case "need":S.coErr=true;renderSend();var f=["co-name","co-phone","co-area"].filter(function(x){var el=$(x);return el&&!el.value.trim();})[0];if(f)$(f).focus();break;
   /* admin */
   case "admin":openAdmin();break;
@@ -1616,6 +1675,9 @@ document.addEventListener("click",function(e){
   case "atab":S.atab=v;S.confirm=null;renderAdminTop();renderAdminBody();if(v==="stats")loadStats();var ad=$("adm");if(ad)ad.scrollTop=0;break;
   case "publish":publish();break;
   case "lock-now":lockNow();break;
+  case "copy-url":copyText(v);break;
+  case "p-link":p=prodById(id);if(p)copyText(linkProduct(p));break;
+  case "c-link":if(DATA.categories[i])copyText(linkCat(DATA.categories[i]));break;
   case "arr-open":initOrd();S.arr={cat:"all"};renderAdminBody();var ad0=$("adm");if(ad0)ad0.scrollTop=0;break;
   case "arr-done":S.arr=null;renderAdminTop();renderAdminBody();if(S.dirty)toast("Order changed. Tap Publish to website to put it live.");break;
   case "arr-mv":if(arrMove(id,(function(){var L=arrList(),k=0;L.forEach(function(p,i){if(p.id===id)k=i;});return k+parseInt(v,10);})()))renderArrList();renderAdminTop();break;
@@ -1716,8 +1778,10 @@ window.addEventListener("storage",function(e){
 });
 /* boot */
 try{var h0=history.state;if(h0&&h0.mc&&(h0.p==="checkout"||h0.p==="done"))S.page=h0.p;}catch(e){}
+initPixel();routeFromUrl();
 shell();renderAll();
-try{history.replaceState(snap(),"");}catch(e){}
+try{var st0=snap();if(S.openAfter)st0.v=null;history.replaceState(st0,"",(S.standalone||window.__MC_ADMIN===true||location.hash==="#admin")?undefined:(S.page==="col"?urlFor(st0):(location.search?location.pathname:undefined)));}catch(e){}
+if(S.openAfter){var oa=S.openAfter;S.openAfter=null;openProduct(oa);}
 window.MC_IMG();document.addEventListener("DOMContentLoaded",function(){window.MC_IMG();});
 (function(){var x0=null,y0=0;document.addEventListener("touchstart",function(e){var t=e.target&&e.target.closest&&e.target.closest(".slider");if(!t){x0=null;return;}x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});document.addEventListener("touchend",function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.2){var rtl=document.documentElement.dir==="rtl";setSlide(S.slide+(((dx<0)!==rtl)?1:-1));startAuto();}},{passive:true});})();
 if(!(window.claude&&typeof window.claude.use==="function")&&(location.hash==="#admin"||window.__MC_ADMIN===true)){adminBoot();}
@@ -1738,4 +1802,5 @@ function checkEdit(){
 })();
 </script>
 <script id="mc-img" type="application/json">{}</script>
-<script>window.MC_IMG&&window.MC_IMG()</script></body></html>
+<script>window.MC_IMG&&window.MC_IMG()</script>
+</body></html>
